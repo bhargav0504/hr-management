@@ -131,7 +131,7 @@
           <tbody>
             {% for r in recent_payroll %}
             <tr>
-              <td>{{ r.month|month_name[:3] }} {{ r.year }}</td>
+              <td>{{ (r.month|month_name)[:3] }} {{ r.year }}</td>
               <td>{{ r.gross_earned|inr }}</td>
               <td class="text-success fw-bold">{{ r.net_salary|inr }}</td>
               <td>
