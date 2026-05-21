@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Payslip — {{ record.employee.full_name }}{% endblock %}
+{% block page_title %}Payslip — {{ record.employee.full_name }} — {{ record.period_label }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-end gap-2 mb-3 no-print">
+  <a href="{{ url_for('payroll.edit_record', record_id=record.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+  <a href="{{ url_for('payroll.download_payslip', record_id=record.id) }}" class="btn btn-danger btn-sm"><i class="bi bi-file-pdf"></i> Download PDF</a>
+  <button onclick="window.print()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-printer"></i> Print</button>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header" style="background:#dcfce7">Earnings</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 small">
+          <tr><td>Basic</td><td class="text-end">{{ record.basic|inr }}</td></tr>
+          <tr><td>HRA</td><td class="text-end">{{ record.hra|inr }}</td></tr>
+          <tr><td>DA</td><td class="text-end">{{ record.da|inr }}</td></tr>
+          <tr><td>Special Allowance</td><td class="text-end">{{ record.special_allowance|inr }}</td></tr>
+          <tr><td>Other Allowance</td><td class="text-end">{{ record.other_allowance|inr }}</td></tr>
+          <tr><td>Petrol Allowance <span class="text-muted">(excl. from PF)</span></td><td class="text-end">{{ record.petrol_allowance|inr }}</td></tr>
+          <tr><td>Conveyance</td><td class="text-end">{{ record.conveyance|inr }}</td></tr>
+          <tr><td>Medical Allowance</td><td class="text-end">{{ record.medical_allowance|inr }}</td></tr>
+          <tr class="text-muted small"><td>PF Wage Base</td><td class="text-end">{{ record.pf_wage_base|inr }}</td></tr>
+          <tr class="table-success"><td><strong>Gross Earned</strong></td><td class="text-end fw-bold">{{ record.gross_earned|inr }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header" style="background:#fee2e2">Deductions</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0 small">
+          <tr><td>PF (Employee 12%)</td><td class="text-end">{{ record.pf_employee|inr }}</td></tr>
+          <tr><td>ESIC (Employee 0.75%)</td><td class="text-end">{{ record.esic_employee|inr }}</td></tr>
+          <tr><td>Professional Tax (PT)</td><td class="text-end">{{ record.pt|inr }}</td></tr>
+          <tr><td>Gujarat LWF</td><td class="text-end">{{ record.lwf_employee|inr }}</td></tr>
+          <tr><td>TDS</td><td class="text-end">{{ record.tds|inr }}</td></tr>
+          <tr><td>Advance Recovery</td><td class="text-end">{{ record.advance_deduction|inr }}</td></tr>
+          <tr><td>Other Deductions {{ ('('+record.other_deductions_remarks+')') if record.other_deductions_remarks else '' }}</td><td class="text-end">{{ record.other_deductions|inr }}</td></tr>
+          <tr class="table-danger"><td><strong>Total Deductions</strong></td><td class="text-end fw-bold">{{ record.total_deductions|inr }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="alert alert-success text-center" style="font-size:1.4rem;font-weight:700">
+      NET PAY: {{ record.net_salary|inr }}
+    </div>
+  </div>
+
+  <!-- Employer Contributions -->
+  <div class="col-12">
+    <div class="card border-warning">
+      <div class="card-header" style="background:#fef3c7"><strong>Employer Contributions</strong> <small class="text-muted">(not deducted from salary)</small></div>
+      <div class="card-body">
+        <div class="row text-center small g-2">
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">EPF (3.67%)</div><strong>{{ record.pf_employer_epf|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">EPS (8.33%)</div><strong>{{ record.pf_employer_eps|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">EDLI (0.5%)</div><strong>{{ record.pf_employer_edli|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">ESIC (3.25%)</div><strong>{{ record.esic_employer|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">LWF (Employer)</div><strong>{{ record.lwf_employer|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">Gratuity (4.81%)</div><strong>{{ record.gratuity|inr }}</strong></div></div>
+          <div class="col"><div class="p-2 bg-light rounded"><div class="text-muted">Stat. Bonus (8.33%)</div><strong>{{ record.bonus|inr }}</strong></div></div>
+          <div class="col" style="background:#fef3c7;border-radius:6px"><div class="p-2 rounded"><div class="text-muted fw-bold">Monthly CTC</div><strong style="font-size:1.1rem">{{ record.ctc|inr }}</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

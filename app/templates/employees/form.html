@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — HR Manager{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<form method="post">
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+
+    <!-- Basic Info -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-person-badge me-2"></i>Basic Information</div>
+        <div class="card-body row g-3">
+          <div class="col-md-2">
+            <label class="form-label">Employee Code *</label>
+            {{ form.emp_code(class="form-control" + (" is-invalid" if form.emp_code.errors else "")) }}
+            {% for e in form.emp_code.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">First Name *</label>
+            {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Last Name *</label>
+            {{ form.last_name(class="form-control") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Gender</label>
+            {{ form.gender(class="form-select") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Marital Status</label>
+            {{ form.marital_status(class="form-select") }}
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Father / Husband Name</label>
+            {{ form.father_husband_name(class="form-control") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Date of Birth</label>
+            {{ form.date_of_birth(class="form-control") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Date of Joining *</label>
+            {{ form.date_of_joining(class="form-control" + (" is-invalid" if form.date_of_joining.errors else "")) }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Date of Leaving</label>
+            {{ form.date_of_leaving(class="form-control") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Employment Type</label>
+            {{ form.employment_type(class="form-select") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Department *</label>
+            {{ form.department(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Location</label>
+            {{ form.location(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Designation *</label>
+            {{ form.designation(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Category</label>
+            {{ form.category(class="form-control", placeholder="Worker / Staff / Management") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Mobile (Primary)</label>
+            {{ form.mobile(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Mobile (Alternate)</label>
+            {{ form.alt_mobile(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Email</label>
+            {{ form.email(class="form-control") }}
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">City</label>
+            {{ form.city(class="form-control") }}
+          </div>
+          <div class="col-md-12">
+            <label class="form-label">Address</label>
+            {{ form.address(class="form-control", rows=2) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statutory IDs -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-card-list me-2"></i>Statutory IDs</div>
+        <div class="card-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label">PAN Number</label>
+            {{ form.pan_number(class="form-control text-uppercase", maxlength=10) }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Aadhaar Number</label>
+            {{ form.aadhaar_number(class="form-control", maxlength=12) }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">UAN (PF)</label>
+            {{ form.uan_number(class="form-control", maxlength=12) }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ESIC IP Number</label>
+            {{ form.esic_ip_number(class="form-control") }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ESIC Dispensary No.</label>
+            {{ form.disp_no(class="form-control") }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-bank me-2"></i>Bank Details</div>
+        <div class="card-body row g-3">
+          <div class="col-md-12">
+            <label class="form-label">Bank Name</label>
+            {{ form.bank_name(class="form-control") }}
+          </div>
+          <div class="col-md-7">
+            <label class="form-label">Account Number</label>
+            {{ form.bank_account(class="form-control") }}
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">IFSC Code</label>
+            {{ form.ifsc_code(class="form-control text-uppercase") }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Structure -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-cash-stack me-2"></i>Salary Structure (Monthly)</div>
+        <div class="card-body row g-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold text-primary">Gross CTC (Total)</label>
+            {{ form.gross_ctc(class="form-control", id="gross_ctc") }}
+            <div class="form-text">Set this if you want to record total CTC directly</div>
+          </div>
+          <div class="col-md-9"><div class="alert alert-info py-2 px-3 mb-0 small" id="grossDisplay">Computed Gross (from components): ₹0.00</div></div>
+          <div class="col-md-2">
+            <label class="form-label">Basic *</label>
+            {{ form.basic_salary(class="form-control salary-comp" + (" is-invalid" if form.basic_salary.errors else ""), id="basic_salary") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">HRA</label>
+            {{ form.hra(class="form-control salary-comp", id="hra") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">DA</label>
+            {{ form.da(class="form-control salary-comp", id="da") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Special Allowance</label>
+            {{ form.special_allowance(class="form-control salary-comp", id="special_allowance") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Other Allowance</label>
+            {{ form.other_allowance(class="form-control salary-comp", id="other_allowance") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Petrol Allow. <span class="text-muted small">(excl. PF)</span></label>
+            {{ form.petrol_allowance(class="form-control salary-comp", id="petrol_allowance") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Conveyance</label>
+            {{ form.conveyance(class="form-control salary-comp", id="conveyance") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Medical Allow.</label>
+            {{ form.medical_allowance(class="form-control salary-comp", id="medical_allowance") }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statutory Options -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-shield-check me-2"></i>Statutory Options</div>
+        <div class="card-body row g-3 align-items-center">
+          <div class="col-md-2">
+            <div class="form-check form-switch">
+              {{ form.pf_applicable(class="form-check-input", role="switch", id="pf_applicable") }}
+              <label class="form-check-label">PF Applicable</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check form-switch">
+              {{ form.pf_on_ceiling(class="form-check-input", role="switch") }}
+              <label class="form-check-label">PF Ceiling ₹15,000</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check form-switch">
+              {{ form.pension_eligible(class="form-check-input", role="switch") }}
+              <label class="form-check-label">EPS Eligible</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check form-switch">
+              {{ form.esic_applicable(class="form-check-input", role="switch") }}
+              <label class="form-check-label">ESIC Applicable</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <div class="form-check form-switch">
+              {{ form.pt_applicable(class="form-check-input", role="switch") }}
+              <label class="form-check-label">Professional Tax (PT)</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label mb-0">TDS Regime</label>
+            {{ form.tds_regime(class="form-select form-select-sm") }}
+          </div>
+          <div class="col-12">
+            <div class="alert alert-info py-2 px-3 mb-0 small">
+              <strong>PT (Gujarat):</strong> ₹200/month deducted if gross earned ≥ ₹12,000. &nbsp;|&nbsp;
+              <strong>Gujarat LWF:</strong> ₹6 employee / ₹12 employer — auto-deducted in June &amp; December. &nbsp;|&nbsp;
+              <strong>ESIC:</strong> Auto-excluded if gross CTC &gt; ₹21,000.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary px-4">{{ form.submit.label.text }}</button>
+      <a href="{{ url_for('employees.list_employees') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+  const salaryFields = ['basic_salary','hra','da','special_allowance','other_allowance','petrol_allowance','conveyance','medical_allowance'];
+  function updateGross() {
+    let total = 0;
+    salaryFields.forEach(id => {
+      const v = parseFloat(document.getElementById(id)?.value || 0);
+      if (!isNaN(v)) total += v;
+    });
+    document.getElementById('grossDisplay').textContent = 'Computed Gross (from components): ₹' + total.toLocaleString('en-IN', {minimumFractionDigits:2});
+  }
+  salaryFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateGross);
+  });
+  updateGross();
+</script>
+{% endblock %}

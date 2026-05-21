@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Run Payroll — HR Manager{% endblock %}
+{% block page_title %}Run Payroll{% endblock %}
+{% block content %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <div class="card mb-3">
+    <div class="card-header"><i class="bi bi-calendar3 me-2"></i>Payroll Period</div>
+    <div class="card-body row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Month</label>
+        <select name="month" class="form-select">
+          {% for m, mn in months %}<option value="{{ m }}" {{ 'selected' if m == month }}>{{ mn }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Year</label>
+        <select name="year" class="form-select">
+          {% for y in years %}<option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Total Working Days</label>
+        <input type="number" name="total_working_days" class="form-control" value="{{ total_days }}" min="1" max="31"/>
+      </div>
+      <div class="col-md-5">
+        <div class="alert alert-info py-2 px-3 mb-0 small">
+          Existing records will be skipped. Edit individual records after processing if needed.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between">
+      <span>Employee Present Days</span>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setAll()">Set All to Max Days</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm mb-0 small">
+        <thead><tr><th>Emp Code</th><th>Name</th><th>Department</th><th>Gross CTC</th><th>PF</th><th>ESIC</th><th style="width:120px">Present Days</th></tr></thead>
+        <tbody>
+          {% for emp in employees %}
+          <tr>
+            <td><code>{{ emp.emp_code }}</code></td>
+            <td>{{ emp.full_name }}</td>
+            <td>{{ emp.department }}</td>
+            <td>{{ emp.gross_salary|inr }}</td>
+            <td><i class="bi bi-{{ 'check-circle-fill text-success' if emp.pf_applicable else 'x-circle text-muted' }}"></i></td>
+            <td><i class="bi bi-{{ 'check-circle-fill text-success' if emp.esic_applicable else 'x-circle text-muted' }}"></i></td>
+            <td>
+              <input type="number" name="present_{{ emp.id }}" class="form-control form-control-sm present-days"
+                     value="{{ total_days }}" min="0" max="31" step="0.5"/>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer">
+      <button type="submit" class="btn btn-success px-4">
+        <i class="bi bi-play-circle"></i> Process Payroll
+      </button>
+      <a href="{{ url_for('payroll.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+function setAll() {
+  const days = document.querySelector('[name=total_working_days]').value;
+  document.querySelectorAll('.present-days').forEach(el => el.value = days);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Advances — HR Manager{% endblock %}
+{% block page_title %}Salary Advances{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <form class="d-flex gap-2" method="get">
+    <select name="status" class="form-select form-select-sm">
+      <option value="active" {{ 'selected' if status == 'active' }}>Active</option>
+      <option value="closed" {{ 'selected' if status == 'closed' }}>Closed</option>
+      <option value="" {{ 'selected' if status == '' }}>All</option>
+    </select>
+    <input type="text" name="q" class="form-control form-control-sm" placeholder="Search employee..." value="{{ q }}"/>
+    <button class="btn btn-primary btn-sm">Filter</button>
+  </form>
+  <a href="{{ url_for('advances.create_advance') }}" class="btn btn-success btn-sm">
+    <i class="bi bi-plus"></i> Grant Advance
+  </a>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 small">
+      <thead><tr><th>Emp</th><th>Employee</th><th>Date</th><th>Amount</th><th>EMI</th><th>Repaid</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for adv in advances %}
+        <tr>
+          <td><code>{{ adv.employee.emp_code }}</code></td>
+          <td>{{ adv.employee.full_name }}</td>
+          <td>{{ adv.disbursed_date.strftime('%d %b %Y') }}</td>
+          <td>{{ adv.amount|inr }}</td>
+          <td>{{ adv.monthly_installment|inr }}</td>
+          <td>{{ adv.total_repaid|inr }}</td>
+          <td class="{{ 'text-danger fw-bold' if adv.balance|float > 0 else 'text-success' }}">{{ adv.balance|inr }}</td>
+          <td><span class="badge bg-{{ 'success' if adv.status == 'active' else 'secondary' }}">{{ adv.status }}</span></td>
+          <td>
+            <a href="{{ url_for('advances.detail', adv_id=adv.id) }}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No advances found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

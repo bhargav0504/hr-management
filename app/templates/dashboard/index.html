@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — HR Manager{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#1a56db,#3b82f6)">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ stats.total_employees }}</div>
+          <div class="stat-label">Active Employees</div>
+        </div>
+        <i class="bi bi-people stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#059669,#34d399)">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ stats.departments }}</div>
+          <div class="stat-label">Departments</div>
+        </div>
+        <i class="bi bi-diagram-3 stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#d97706,#fbbf24)">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ stats.pending_payroll }}</div>
+          <div class="stat-label">Pending Payroll (this month)</div>
+        </div>
+        <i class="bi bi-clock-history stat-icon"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card" style="background:linear-gradient(135deg,#7c3aed,#a78bfa)">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ stats.active_advances }}</div>
+          <div class="stat-label">Active Advances</div>
+        </div>
+        <i class="bi bi-wallet2 stat-icon"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Payroll — {{ today.strftime('%B %Y') }}</span>
+        <div>
+          <a href="{{ url_for('payroll.run_payroll', month=today.month, year=today.year) }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-play-circle"></i> Run Payroll
+          </a>
+          <a href="{{ url_for('payroll.salary_sheet', month=today.month, year=today.year) }}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-table"></i> Salary Sheet
+          </a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 small">
+          <thead><tr><th>Emp</th><th>Name</th><th>Gross</th><th>Deductions</th><th>Net Pay</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for r in recent_payroll %}
+            <tr>
+              <td><code>{{ r.employee.emp_code }}</code></td>
+              <td><a href="{{ url_for('payroll.record_detail', record_id=r.id) }}">{{ r.employee.full_name }}</a></td>
+              <td>{{ r.gross_earned|inr }}</td>
+              <td>{{ r.total_deductions|inr }}</td>
+              <td class="fw-bold text-success">{{ r.net_salary|inr }}</td>
+              <td><span class="badge bg-{{ 'success' if r.status == 'processed' else 'warning' }}">{{ r.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-3">No payroll records for this month yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Quick Actions</div>
+      <div class="card-body d-grid gap-2">
+        <a href="{{ url_for('employees.create_employee') }}" class="btn btn-outline-primary">
+          <i class="bi bi-person-plus"></i> Add Employee
+        </a>
+        <a href="{{ url_for('payroll.run_payroll') }}" class="btn btn-outline-success">
+          <i class="bi bi-play-circle"></i> Run Payroll
+        </a>
+        <a href="{{ url_for('advances.create_advance') }}" class="btn btn-outline-warning">
+          <i class="bi bi-plus-circle"></i> Grant Advance
+        </a>
+        <a href="{{ url_for('payroll.export_excel', month=today.month, year=today.year) }}" class="btn btn-outline-secondary">
+          <i class="bi bi-file-earmark-excel"></i> Export Salary Sheet
+        </a>
+        <a href="{{ url_for('payroll.export_pf_challan', month=today.month, year=today.year) }}" class="btn btn-outline-secondary">
+          <i class="bi bi-file-earmark-excel"></i> PF Challan
+        </a>
+        <a href="{{ url_for('payroll.export_esic_challan', month=today.month, year=today.year) }}" class="btn btn-outline-secondary">
+          <i class="bi bi-file-earmark-excel"></i> ESIC Challan
+        </a>
+        <a href="{{ url_for('reports.tds_summary') }}" class="btn btn-outline-danger">
+          <i class="bi bi-receipt"></i> TDS Summary
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

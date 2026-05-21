@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Advance Detail — HR Manager{% endblock %}
+{% block page_title %}Advance — {{ advance.employee.full_name }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between">
+        <span>Advance Details</span>
+        {% if current_user.is_admin() and advance.status == 'active' %}
+        <form method="post" action="{{ url_for('advances.close_advance', adv_id=advance.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Close this advance?')">Close Advance</button>
+        </form>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <table class="table table-borderless table-sm small">
+          <tr><td class="text-muted">Employee</td><td><strong>{{ advance.employee.full_name }}</strong></td></tr>
+          <tr><td class="text-muted">Emp Code</td><td><code>{{ advance.employee.emp_code }}</code></td></tr>
+          <tr><td class="text-muted">Amount</td><td>{{ advance.amount|inr }}</td></tr>
+          <tr><td class="text-muted">Disbursed</td><td>{{ advance.disbursed_date.strftime('%d %b %Y') }}</td></tr>
+          <tr><td class="text-muted">Monthly EMI</td><td>{{ advance.monthly_installment|inr }}</td></tr>
+          <tr><td class="text-muted">Total Repaid</td><td class="text-success">{{ advance.total_repaid|inr }}</td></tr>
+          <tr><td class="text-muted">Balance</td><td class="{{ 'text-danger fw-bold' if advance.balance|float > 0 else 'text-success' }}">{{ advance.balance|inr }}</td></tr>
+          <tr><td class="text-muted">Reason</td><td>{{ advance.reason or '-' }}</td></tr>
+          <tr><td class="text-muted">Status</td><td><span class="badge bg-{{ 'success' if advance.status == 'active' else 'secondary' }}">{{ advance.status }}</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">Repayment History</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 small">
+          <thead><tr><th>Month</th><th>Year</th><th>Amount Deducted</th></tr></thead>
+          <tbody>
+            {% for rep in repayments %}
+            <tr>
+              <td>{{ rep.month|month_name }}</td>
+              <td>{{ rep.year }}</td>
+              <td>{{ rep.amount|inr }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-muted text-center py-3">No repayments yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

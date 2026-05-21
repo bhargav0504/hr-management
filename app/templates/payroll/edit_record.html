@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Edit Payroll Record — HR Manager{% endblock %}
+{% block page_title %}Edit Payroll — {{ record.employee.full_name }} — {{ record.period_label }}{% endblock %}
+{% block content %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <div class="card mb-3">
+    <div class="card-header">Adjust Payroll</div>
+    <div class="card-body row g-3">
+      <div class="col-md-2">
+        <label class="form-label">Present Days</label>
+        <input type="number" name="present_days" class="form-control" value="{{ record.present_days }}" min="0" max="31" step="0.5"/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">TDS Override (₹)</label>
+        <input type="number" name="tds" class="form-control" value="{{ record.tds }}" min="0" step="0.01"/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Advance Deduction (₹)</label>
+        <input type="number" name="advance_deduction" class="form-control" value="{{ record.advance_deduction }}" min="0" step="0.01"/>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Other Deductions (₹)</label>
+        <input type="number" name="other_deductions" class="form-control" value="{{ record.other_deductions }}" min="0" step="0.01"/>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Remarks for Other Deductions</label>
+        <input type="text" name="other_deductions_remarks" class="form-control" value="{{ record.other_deductions_remarks or '' }}"/>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button type="submit" class="btn btn-primary">Recalculate &amp; Save</button>
+      <a href="{{ url_for('payroll.record_detail', record_id=record.id) }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+      {% if current_user.is_admin() %}
+      <form method="post" action="{{ url_for('payroll.delete_record', record_id=record.id) }}" class="d-inline ms-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="btn btn-outline-danger" onclick="return confirm('Delete this payroll record?')">Delete</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</form>
+{% endblock %}

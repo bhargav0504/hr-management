@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}{{ emp.full_name }} — HR Manager{% endblock %}
+{% block page_title %}Employee: {{ emp.full_name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <span class="badge-dept">{{ emp.department }}</span>
+    <span class="text-muted ms-2 small">{{ emp.designation }}</span>
+    <span class="badge bg-{{ 'success' if emp.is_active else 'secondary' }} ms-2">{{ 'Active' if emp.is_active else 'Inactive' }}</span>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('employees.edit_employee', emp_id=emp.id) }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-pencil"></i> Edit
+    </a>
+    {% if current_user.is_admin() %}
+    <form method="post" action="{{ url_for('employees.toggle_employee', emp_id=emp.id) }}" class="d-inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <button class="btn btn-sm btn-{{ 'outline-danger' if emp.is_active else 'outline-success' }}">
+        {{ 'Deactivate' if emp.is_active else 'Activate' }}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Personal Details</div>
+      <div class="card-body small">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">Emp Code</td><td><strong>{{ emp.emp_code }}</strong></td></tr>
+          <tr><td class="text-muted">Mobile</td><td>{{ emp.mobile or '-' }}</td></tr>
+          <tr><td class="text-muted">Email</td><td>{{ emp.email or '-' }}</td></tr>
+          <tr><td class="text-muted">DOB</td><td>{{ emp.date_of_birth.strftime('%d %b %Y') if emp.date_of_birth else '-' }}</td></tr>
+          <tr><td class="text-muted">DOJ</td><td>{{ emp.date_of_joining.strftime('%d %b %Y') }}</td></tr>
+          {% if emp.date_of_leaving %}<tr><td class="text-muted">DOL</td><td>{{ emp.date_of_leaving.strftime('%d %b %Y') }}</td></tr>{% endif %}
+          <tr><td class="text-muted">Type</td><td>{{ emp.employment_type|title }}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header">Statutory IDs</div>
+      <div class="card-body small">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">PAN</td><td><code>{{ emp.pan_number or '-' }}</code></td></tr>
+          <tr><td class="text-muted">Aadhaar</td><td><code>{{ emp.aadhaar_number or '-' }}</code></td></tr>
+          <tr><td class="text-muted">UAN</td><td><code>{{ emp.uan_number or '-' }}</code></td></tr>
+          <tr><td class="text-muted">ESIC IP</td><td><code>{{ emp.esic_ip_number or '-' }}</code></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Bank Details</div>
+      <div class="card-body small">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">Bank</td><td>{{ emp.bank_name or '-' }}</td></tr>
+          <tr><td class="text-muted">Account</td><td><code>{{ emp.bank_account or '-' }}</code></td></tr>
+          <tr><td class="text-muted">IFSC</td><td><code>{{ emp.ifsc_code or '-' }}</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header">Salary Structure</div>
+      <div class="card-body small">
+        <table class="table table-borderless table-sm mb-0">
+          <tr><td class="text-muted">Basic</td><td class="text-end">{{ emp.basic_salary|inr }}</td></tr>
+          <tr><td class="text-muted">HRA</td><td class="text-end">{{ emp.hra|inr }}</td></tr>
+          <tr><td class="text-muted">DA</td><td class="text-end">{{ emp.da|inr }}</td></tr>
+          <tr><td class="text-muted">Special Allow.</td><td class="text-end">{{ emp.special_allowance|inr }}</td></tr>
+          <tr><td class="text-muted">Conveyance</td><td class="text-end">{{ emp.conveyance|inr }}</td></tr>
+          <tr><td class="text-muted">Medical Allow.</td><td class="text-end">{{ emp.medical_allowance|inr }}</td></tr>
+          <tr><td class="text-muted">Other Allow.</td><td class="text-end">{{ emp.other_allowance|inr }}</td></tr>
+          <tr class="table-primary"><td><strong>Gross CTC</strong></td><td class="text-end fw-bold">{{ emp.gross_salary|inr }}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Statutory Flags</div>
+      <div class="card-body small">
+        <div class="d-flex gap-3">
+          <div>
+            <span class="text-muted">PF:</span>
+            <span class="badge bg-{{ 'success' if emp.pf_applicable else 'secondary' }}">{{ 'Yes' if emp.pf_applicable else 'No' }}</span>
+          </div>
+          <div>
+            <span class="text-muted">ESIC:</span>
+            <span class="badge bg-{{ 'success' if emp.esic_applicable else 'secondary' }}">{{ 'Yes' if emp.esic_applicable else 'No' }}</span>
+          </div>
+          <div>
+            <span class="text-muted">TDS:</span>
+            <span class="badge bg-info text-dark">{{ emp.tds_regime|upper }}</span>
+          </div>
+          <div>
+            <span class="text-muted">LWF:</span>
+            <span class="badge bg-success">Jun & Dec</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between">
+        <span>Active Advances</span>
+        <a href="{{ url_for('advances.create_advance') }}" class="btn btn-sm btn-outline-primary">+ Grant</a>
+      </div>
+      <div class="card-body small">
+        {% for adv in active_advances %}
+        <div class="mb-2 p-2 bg-light rounded">
+          <div class="d-flex justify-content-between">
+            <span>{{ adv.disbursed_date.strftime('%d %b %Y') }}</span>
+            <strong>{{ adv.amount|inr }}</strong>
+          </div>
+          <div class="text-muted">Balance: {{ adv.balance|inr }} | EMI: {{ adv.monthly_installment|inr }}</div>
+        </div>
+        {% else %}
+        <span class="text-muted">No active advances.</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">Recent Payroll</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 small">
+          <thead><tr><th>Period</th><th>Gross</th><th>Net</th><th></th></tr></thead>
+          <tbody>
+            {% for r in recent_payroll %}
+            <tr>
+              <td>{{ r.month|month_name[:3] }} {{ r.year }}</td>
+              <td>{{ r.gross_earned|inr }}</td>
+              <td class="text-success fw-bold">{{ r.net_salary|inr }}</td>
+              <td>
+                <a href="{{ url_for('payroll.download_payslip', record_id=r.id) }}" class="btn btn-sm btn-outline-secondary" title="Download Payslip">
+                  <i class="bi bi-file-pdf"></i>
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted text-center py-2">No records.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
