@@ -49,6 +49,13 @@ Wait for it to finish (1–2 minutes).
 
 ## Step 4 — Set Up the Database
 
+The app uses **SQLite** — a lightweight database that is built into Python. No separate database software needs to be installed.
+
+Running the command below will automatically:
+- Create the database file (`hr_management.db`) in the project folder
+- Create all the required tables
+- Create a default admin login
+
 ```bash
 python init_db.py
 ```
@@ -58,6 +65,8 @@ You should see:
 Tables created.
 Admin user created: username=admin  password=Admin@123
 ```
+
+> If you see any error here, make sure step 2 (virtual environment) is active — you should see `(venv)` at the start of the terminal line before running this.
 
 ---
 
