@@ -104,9 +104,10 @@ def create_employee():
 @employees_bp.route('/<int:emp_id>')
 @login_required
 def detail(emp_id):
+    from app.models.payroll import SalaryRecord
     emp = Employee.query.get_or_404(emp_id)
     recent_payroll = emp.salary_records.order_by(
-        db.text('year desc, month desc')
+        SalaryRecord.year.desc(), SalaryRecord.month.desc()
     ).limit(12).all()
     active_advances = emp.advances.filter_by(status='active').all()
     return render_template('employees/detail.html', emp=emp,
