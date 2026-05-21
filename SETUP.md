@@ -1,44 +1,56 @@
 # HR Management System — Setup Guide
 
 ## Prerequisites
-- Python 3.10+
-- PostgreSQL 14+
+
+- **Python 3.11+** — https://www.python.org/downloads/
+  - During install, check **"Add Python to PATH"**
+- **Git** — https://git-scm.com/downloads *(only if cloning from GitHub)*
+
+> No database installation needed — the app uses SQLite (built into Python).
+
+---
 
 ## Installation
 
+### Option A — From ZIP file
+
+1. Extract the ZIP to a folder (e.g. `hr-management`)
+2. Open that folder in VS Code
+3. Open the Terminal (Terminal → New Terminal) and run the steps below
+
+### Option B — From GitHub
+
 ```bash
-cd hr_management
+git clone https://github.com/bhargav0504/hr-management.git
+cd hr-management
+```
 
-# Create virtual environment
+---
+
+## Setup Steps
+
+```bash
+# 1. Create virtual environment
 python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # Linux/Mac
 
-# Install dependencies
+# 2. Activate it
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Mac / Linux
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# Copy and edit .env
-copy .env.example .env
-# Edit .env — set DATABASE_URL and COMPANY_* details
-```
-
-## Database Setup
-
-1. Create PostgreSQL database:
-```sql
-CREATE DATABASE hr_management;
-```
-
-2. Set `DATABASE_URL` in your `.env` file.
-
-3. Load environment and create tables:
-```bash
-# Windows (set env vars manually or use python-dotenv)
-set DATABASE_URL=postgresql://postgres:password@localhost:5432/hr_management
-set SECRET_KEY=your-secret-key
-
+# 4. Create database and default admin user
 python init_db.py
 ```
+
+After Step 4 you should see:
+```
+Tables created.
+Admin user created: username=admin  password=Admin@123
+```
+
+---
 
 ## Run
 
@@ -46,9 +58,31 @@ python init_db.py
 python run.py
 ```
 
-Open http://localhost:5000
+Open **http://localhost:5000** in your browser.
 
-**Default login:** `admin` / `Admin@123` — change immediately!
+**Default login:** `admin` / `Admin@123`
+
+---
+
+## Using MySQL Instead of SQLite (Optional)
+
+If you prefer MySQL (XAMPP etc.), set the `DATABASE_URL` in a `.env` file:
+
+```bash
+copy .env.example .env
+```
+
+Edit `.env` and set:
+```
+DATABASE_URL=mysql+pymysql://root:@localhost:3306/hr_management
+```
+
+Create the database in MySQL first:
+```sql
+CREATE DATABASE hr_management;
+```
+
+Then run `python init_db.py` as above.
 
 ---
 
@@ -70,6 +104,8 @@ Open http://localhost:5000
 | Gratuity | 4.81% of basic shown in CTC calculation |
 | Bonus | 8.33% of basic (statutory bonus) shown in payslip & CTC |
 
+---
+
 ## Payroll Calculation Rules (FY 2024-25)
 
 ### PF
@@ -86,7 +122,7 @@ Open http://localhost:5000
 ### Professional Tax (PT) — Gujarat
 - ₹200/month deducted if monthly gross earned ≥ ₹12,000
 - Separate PT challan export available
-- Set `pt_applicable = False` on employee to exclude (e.g., Directors with special exemption)
+- Set `pt_applicable = False` on employee to exclude (e.g. Directors)
 
 ### Gujarat LWF
 - Deducted in June and December payroll only
