@@ -1,0 +1,14 @@
+{
+  "name": "HR Management System",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "postCreateCommand": "pip install -r requirements.txt && python init_db.py",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [5000],
+  "portsAttributes": {
+    "5000": {
+      "label": "HR Management App",
+      "onAutoForward": "notify",
+      "visibility": "public"
+    }
+  }
+}
