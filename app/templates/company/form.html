@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-buildings me-2"></i>Company Details</div>
+        <div class="card-body row g-3">
+          <div class="col-md-6">{{ form.name.label(class='form-label') }}{{ form.name(class='form-control') }}</div>
+          <div class="col-md-3">{{ form.short_name.label(class='form-label') }}{{ form.short_name(class='form-control') }}</div>
+          <div class="col-md-3">
+            <label class="form-label">Company Logo</label>
+            <input type="file" name="logo" class="form-control" accept="image/*"/>
+            {% if company and company.logo_filename %}
+              <div class="mt-1"><img src="{{ url_for('static', filename='uploads/logos/' ~ company.logo_filename) }}" style="height:40px"/></div>
+            {% endif %}
+          </div>
+          <div class="col-md-12">{{ form.address.label(class='form-label') }}{{ form.address(class='form-control', rows=2) }}</div>
+          <div class="col-md-3">{{ form.pan.label(class='form-label') }}{{ form.pan(class='form-control text-uppercase') }}</div>
+          <div class="col-md-3">{{ form.tan.label(class='form-label') }}{{ form.tan(class='form-control text-uppercase') }}</div>
+          <div class="col-md-3">{{ form.gst.label(class='form-label') }}{{ form.gst(class='form-control text-uppercase') }}</div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <div class="form-check form-switch mt-2">{{ form.is_active(class='form-check-input', role='switch') }}<label class="form-check-label">Active</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-shield-check me-2"></i>Statutory Registrations</div>
+        <div class="card-body row g-3">
+          <div class="col-12">{{ form.pf_no.label(class='form-label') }}{{ form.pf_no(class='form-control') }}</div>
+          <div class="col-12">{{ form.esic_no.label(class='form-label') }}{{ form.esic_no(class='form-control') }}</div>
+          <div class="col-12">{{ form.pt_no.label(class='form-label') }}{{ form.pt_no(class='form-control') }}</div>
+          <div class="col-12">
+            <div class="form-check form-switch">{{ form.lwf_applicable(class='form-check-input', role='switch') }}<label class="form-check-label">{{ form.lwf_applicable.label.text }}</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header"><i class="bi bi-sliders me-2"></i>Payroll Thresholds</div>
+        <div class="card-body row g-3">
+          <div class="col-6">{{ form.esic_ceiling.label(class='form-label') }}{{ form.esic_ceiling(class='form-control') }}</div>
+          <div class="col-6">{{ form.pf_wage_ceiling.label(class='form-label') }}{{ form.pf_wage_ceiling(class='form-control') }}</div>
+          <div class="col-6">{{ form.pt_threshold.label(class='form-label') }}{{ form.pt_threshold(class='form-control') }}</div>
+          <div class="col-6">{{ form.pt_amount.label(class='form-label') }}{{ form.pt_amount(class='form-control') }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12">
+      {{ form.submit(class='btn btn-primary px-4') }}
+      <a href="{{ url_for('company.list_companies') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

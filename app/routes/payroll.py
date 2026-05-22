@@ -283,6 +283,118 @@ def export_pt_challan():
                      as_attachment=True, download_name=filename)
 
 
+@payroll_bp.route('/attendance-template')
+@login_required
+def attendance_template():
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+    from flask import session
+    company_id = session.get('company_id')
+    employees = Employee.query.filter_by(company_id=company_id, is_active=True).order_by(Employee.emp_code).all()
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Attendance'
+    headers = ['emp_code', 'present_days', 'performance_bonus', 'incentive', 'other_extra']
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = PatternFill('solid', fgColor='059669')
+    for emp in employees:
+        ws.append([emp.emp_code, 26, 0, 0, 0])
+    for col in ws.columns:
+        ws.column_dimensions[col[0].column_letter].width = 18
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                     as_attachment=True, download_name='attendance_template.xlsx')
+
+
+@payroll_bp.route('/attendance', methods=['GET', 'POST'])
+@login_required
+def import_attendance():
+    from flask import session
+    today = date.today()
+    months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+    years = list(range(2020, today.year + 2))
+    if request.method == 'POST':
+        f = request.files.get('file')
+        month = int(request.form.get('month', today.month))
+        year = int(request.form.get('year', today.year))
+        total_days = int(request.form.get('total_working_days', 26))
+        if not f or not f.filename.endswith('.xlsx'):
+            flash('Please upload a valid .xlsx file.', 'danger')
+            return redirect(url_for('payroll.import_attendance'))
+        from openpyxl import load_workbook
+        wb = load_workbook(f, data_only=True)
+        ws = wb.active
+        headers = [str(c.value or '').strip().lower() for c in ws[1]]
+        company_id = session.get('company_id')
+        created = skipped = errors = 0
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not any(row):
+                continue
+            data = dict(zip(headers, row))
+            emp_code = str(data.get('emp_code', '') or '').strip()
+            emp = Employee.query.filter_by(company_id=company_id, emp_code=emp_code, is_active=True).first()
+            if not emp:
+                errors += 1
+                continue
+            if SalaryRecord.query.filter_by(employee_id=emp.id, month=month, year=year).first():
+                skipped += 1
+                continue
+            present_days = float(data.get('present_days', total_days) or total_days)
+            extra = {}
+            for key in ['performance_bonus', 'incentive', 'other_extra']:
+                val = data.get(key, 0)
+                if val:
+                    extra[key] = float(val)
+            advance_deduction = _get_advance_deduction(emp, month, year)
+            ytd_tds = _get_ytd_tds(emp, month, year)
+            calc_data = calculate_payroll(
+                employee=emp, month=month, year=year,
+                present_days=present_days, total_working_days=total_days,
+                advance_deduction=advance_deduction, ytd_tds=ytd_tds,
+                config=current_app.config, extra_earnings=extra,
+            )
+            record = SalaryRecord(employee_id=emp.id, **calc_data)
+            record.status = 'processed'
+            record.processed_at = datetime.utcnow()
+            record.processed_by = current_user.id
+            db.session.add(record)
+            created += 1
+        db.session.commit()
+        _process_advance_repayments(month, year, company_id)
+        flash(f'{created} records created, {skipped} skipped, {errors} not found.', 'success')
+        return redirect(url_for('payroll.index', month=month, year=year))
+    return render_template('payroll/import_attendance.html', months=months, years=years,
+                           month=today.month, year=today.year)
+
+
+def _process_advance_repayments(month, year, company_id):
+    records = SalaryRecord.query.join(Employee).filter(
+        Employee.company_id == company_id,
+        SalaryRecord.month == month,
+        SalaryRecord.year == year,
+    ).all()
+    for record in records:
+        if float(record.advance_deduction or 0) > 0:
+            emp = record.employee
+            active = Advance.query.filter_by(employee_id=emp.id, status='active').all()
+            remaining = float(record.advance_deduction)
+            for adv in active:
+                if remaining <= 0:
+                    break
+                installment = min(float(adv.monthly_installment), float(adv.balance), remaining)
+                if installment > 0:
+                    adv.total_repaid = float(adv.total_repaid) + installment
+                    adv.balance = float(adv.balance) - installment
+                    if adv.balance <= 0:
+                        adv.status = 'closed'
+                    remaining -= installment
+    db.session.commit()
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _get_advance_deduction(emp, month, year):

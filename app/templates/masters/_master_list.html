@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Add New</div>
+      <div class="card-body">
+        <form method="post" action="{{ add_url }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {% if show_type %}
+          <div class="mb-2">
+            <label class="form-label small">Type</label>
+            <select name="type" class="form-select form-select-sm">
+              <option value="staff">Staff</option>
+              <option value="worker">Worker</option>
+              <option value="management">Management</option>
+            </select>
+          </div>
+          {% endif %}
+          <div class="input-group">
+            <input type="text" name="name" class="form-control" placeholder="{{ title[:-1] }} name" required/>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-plus"></i></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>#</th><th>Name</th>{% if show_type %}<th>Type</th>{% endif %}<th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted small">{{ loop.index }}</td>
+              <td>{{ item.name }}</td>
+              {% if show_type %}<td><span class="badge bg-secondary">{{ item.type }}</span></td>{% endif %}
+              <td><span class="badge bg-{{ 'success' if item.is_active else 'secondary' }}">{{ 'Active' if item.is_active else 'Inactive' }}</span></td>
+              <td class="text-end">
+                <form method="post" action="{{ toggle_url(item.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-secondary" title="Toggle">{{ 'Deactivate' if item.is_active else 'Activate' }}</button>
+                </form>
+                <form method="post" action="{{ delete_url(item.id) }}" class="d-inline" onsubmit="return confirm('Delete?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-3">No {{ title|lower }} added yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

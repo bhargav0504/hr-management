@@ -1,0 +1,5 @@
+{% extends 'masters/_master_list.html' %}
+{% set add_url = url_for('masters.add_designation') %}
+{% set toggle_url = lambda id: url_for('masters.toggle_designation', item_id=id) %}
+{% set delete_url = lambda id: url_for('masters.delete_designation', item_id=id) %}
+{% set show_type = false %}

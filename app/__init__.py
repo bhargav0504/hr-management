@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, session, redirect, url_for, request, g
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from config import Config
@@ -30,13 +30,16 @@ def create_app(config_class=Config):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Register blueprints
+    # ── Blueprints ────────────────────────────────────────────────────────────
     from app.routes.auth import auth_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.employees import employees_bp
     from app.routes.payroll import payroll_bp
     from app.routes.advances import advances_bp
     from app.routes.reports import reports_bp
+    from app.routes.company import company_bp
+    from app.routes.masters import masters_bp
+    from app.routes.leave import leave_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -44,8 +47,41 @@ def create_app(config_class=Config):
     app.register_blueprint(payroll_bp)
     app.register_blueprint(advances_bp)
     app.register_blueprint(reports_bp)
+    app.register_blueprint(company_bp)
+    app.register_blueprint(masters_bp)
+    app.register_blueprint(leave_bp)
 
-    # Template filters
+    # ── Company guard: require company selection after login ──────────────────
+    EXEMPT_ENDPOINTS = {
+        'auth.login', 'auth.logout', 'auth.users', 'auth.create_user', 'auth.edit_user',
+        'company.select', 'company.switch', 'company.create_company', 'company.list_companies',
+        'company.edit_company',
+    }
+
+    @app.before_request
+    def require_company():
+        if not current_user.is_authenticated:
+            return
+        if request.endpoint is None:
+            return
+        if request.endpoint == 'static':
+            return
+        if request.endpoint in EXEMPT_ENDPOINTS:
+            return
+        if not session.get('company_id'):
+            return redirect(url_for('company.select'))
+
+    # ── Active company context processor ─────────────────────────────────────
+    @app.context_processor
+    def inject_company():
+        company = None
+        cid = session.get('company_id')
+        if cid:
+            from app.models.company import Company
+            company = Company.query.get(cid)
+        return dict(active_company=company)
+
+    # ── Template filters ──────────────────────────────────────────────────────
     @app.template_filter('inr')
     def inr_format(value):
         try:

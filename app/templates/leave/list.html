@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Leave Register{% endblock %}
+{% block page_title %}Leave Register{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3 flex-wrap">
+  {% for s, label in [('','All'),('pending','Pending'),('approved','Approved'),('rejected','Rejected')] %}
+  <a href="{{ url_for('leave.list_applications', status=s) }}"
+     class="btn btn-sm {{ 'btn-primary' if status==s else 'btn-outline-secondary' }}">{{ label }}</a>
+  {% endfor %}
+  <a href="{{ url_for('leave.apply') }}" class="btn btn-sm btn-success ms-auto"><i class="bi bi-plus"></i> Apply Leave</a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead><tr><th>Employee</th><th>Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td><strong>{{ app.employee.emp_code }}</strong> {{ app.employee.full_name }}</td>
+          <td><code>{{ app.leave_type.code }}</code> {{ app.leave_type.name }}</td>
+          <td>{{ app.from_date.strftime('%d %b %Y') }}</td>
+          <td>{{ app.to_date.strftime('%d %b %Y') }}</td>
+          <td>{{ app.days }}</td>
+          <td class="small text-muted">{{ (app.reason or '')[:40] }}</td>
+          <td>
+            <span class="badge bg-{{ 'warning text-dark' if app.status=='pending' else 'success' if app.status=='approved' else 'danger' }}">
+              {{ app.status|title }}
+            </span>
+          </td>
+          <td>
+            {% if app.status == 'pending' and current_user.is_admin() %}
+            <form method="post" action="{{ url_for('leave.approve', app_id=app.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn btn-sm btn-success">Approve</button>
+            </form>
+            <form method="post" action="{{ url_for('leave.reject', app_id=app.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn btn-sm btn-outline-danger">Reject</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No leave applications.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

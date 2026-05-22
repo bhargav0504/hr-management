@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Apply Leave{% endblock %}
+{% block page_title %}Apply Leave{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-calendar-plus me-2"></i>Leave Application</div>
+      <div class="card-body">
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-3">
+            <label class="form-label">Employee *</label>
+            <select name="employee_id" class="form-select" required>
+              <option value="">— Select Employee —</option>
+              {% for emp in employees %}
+              <option value="{{ emp.id }}">{{ emp.emp_code }} — {{ emp.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Leave Type *</label>
+            <select name="leave_type_id" class="form-select" required>
+              <option value="">— Select Type —</option>
+              {% for lt in leave_types %}
+              <option value="{{ lt.id }}">{{ lt.code }} — {{ lt.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col">
+              <label class="form-label">From Date *</label>
+              <input type="date" name="from_date" class="form-control" required/>
+            </div>
+            <div class="col">
+              <label class="form-label">To Date *</label>
+              <input type="date" name="to_date" class="form-control" required/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reason</label>
+            <textarea name="reason" class="form-control" rows="3"></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">Submit Application</button>
+          <a href="{{ url_for('leave.list_applications') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

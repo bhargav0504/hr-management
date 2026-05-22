@@ -7,74 +7,30 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root {
-      --primary: #1a56db;
-      --primary-dark: #1e429f;
-      --sidebar-bg: #1e2a45;
-      --sidebar-width: 240px;
-    }
-    body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
-    .sidebar {
-      width: var(--sidebar-width);
-      min-height: 100vh;
-      background: var(--sidebar-bg);
-      position: fixed;
-      top: 0; left: 0;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar-brand {
-      padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.1rem;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .sidebar-brand small { font-size: 0.65rem; font-weight: 400; opacity: 0.7; display: block; }
-    .sidebar-nav { padding: 0.5rem 0; flex: 1; }
-    .sidebar-section { font-size: 0.65rem; color: rgba(255,255,255,0.4); padding: 0.8rem 1.5rem 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
-    .sidebar-nav a {
-      display: flex; align-items: center; gap: 10px;
-      padding: 0.55rem 1.5rem;
-      color: rgba(255,255,255,0.75);
-      text-decoration: none;
-      font-size: 0.875rem;
-      transition: all 0.15s;
-      border-left: 3px solid transparent;
-    }
-    .sidebar-nav a:hover, .sidebar-nav a.active {
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      border-left-color: var(--primary);
-    }
-    .sidebar-nav a i { width: 18px; text-align: center; font-size: 1rem; }
-    .main-content { margin-left: var(--sidebar-width); min-height: 100vh; }
-    .topbar {
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 0.75rem 1.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
-    }
-    .topbar-title { font-weight: 600; color: #1e2a45; font-size: 1.05rem; }
-    .page-content { padding: 1.5rem; }
-    .card { border: none; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .card-header { background: #fff; border-bottom: 1px solid #f0f0f0; font-weight: 600; }
-    .table th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6b7280; background: #f9fafb; }
-    .badge-dept { background: #dbeafe; color: #1e40af; font-size: 0.75rem; padding: 3px 8px; border-radius: 20px; }
-    .stat-card { border-radius: 12px; color: #fff; padding: 1.25rem; }
-    .stat-card .stat-icon { font-size: 2rem; opacity: 0.85; }
-    .stat-card .stat-value { font-size: 2rem; font-weight: 700; }
-    .stat-card .stat-label { font-size: 0.8rem; opacity: 0.85; }
-    .btn-primary { background: var(--primary); border-color: var(--primary); }
-    .btn-primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
-    .inr::before { content: '₹'; }
-    @media print {
-      .sidebar, .topbar, .no-print { display: none !important; }
-      .main-content { margin-left: 0 !important; }
-    }
+    :root { --primary:#1a56db; --primary-dark:#1e429f; --sidebar-bg:#1e2a45; --sidebar-width:250px; }
+    body { background:#f0f4f8; font-family:'Segoe UI',sans-serif; }
+    .sidebar { width:var(--sidebar-width); min-height:100vh; background:var(--sidebar-bg); position:fixed; top:0; left:0; z-index:100; display:flex; flex-direction:column; overflow-y:auto; }
+    .sidebar-brand { padding:1rem 1.25rem; border-bottom:1px solid rgba(255,255,255,.1); color:#fff; font-weight:700; font-size:1rem; display:flex; align-items:center; gap:8px; }
+    .sidebar-brand small { font-size:.65rem; font-weight:400; opacity:.7; display:block; }
+    .sidebar-nav { padding:.5rem 0; flex:1; }
+    .sidebar-section { font-size:.62rem; color:rgba(255,255,255,.4); padding:.8rem 1.25rem .3rem; text-transform:uppercase; letter-spacing:1px; }
+    .sidebar-nav a { display:flex; align-items:center; gap:9px; padding:.5rem 1.25rem; color:rgba(255,255,255,.75); text-decoration:none; font-size:.85rem; border-left:3px solid transparent; transition:all .15s; }
+    .sidebar-nav a:hover,.sidebar-nav a.active { background:rgba(255,255,255,.08); color:#fff; border-left-color:var(--primary); }
+    .sidebar-nav a i { width:17px; text-align:center; font-size:.95rem; }
+    .main-content { margin-left:var(--sidebar-width); min-height:100vh; }
+    .topbar { background:#fff; border-bottom:1px solid #e5e7eb; padding:.65rem 1.5rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    .topbar-title { font-weight:600; color:#1e2a45; font-size:1rem; }
+    .page-content { padding:1.5rem; }
+    .card { border:none; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .card-header { background:#fff; border-bottom:1px solid #f0f0f0; font-weight:600; }
+    .table th { font-size:.78rem; text-transform:uppercase; letter-spacing:.5px; color:#6b7280; background:#f9fafb; }
+    .badge-dept { background:#dbeafe; color:#1e40af; font-size:.75rem; padding:3px 8px; border-radius:20px; }
+    .stat-card { border-radius:12px; color:#fff; padding:1.25rem; }
+    .stat-card .stat-value { font-size:1.9rem; font-weight:700; }
+    .stat-card .stat-label { font-size:.8rem; opacity:.85; }
+    .btn-primary { background:var(--primary); border-color:var(--primary); }
+    .btn-primary:hover { background:var(--primary-dark); border-color:var(--primary-dark); }
+    @media print { .sidebar,.topbar,.no-print { display:none!important; } .main-content { margin-left:0!important; } }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
@@ -82,32 +38,57 @@
 {% if current_user.is_authenticated %}
 <div class="sidebar">
   <div class="sidebar-brand">
-    <i class="bi bi-building"></i>
-    <div>HR Manager<small>Indian Payroll System</small></div>
+    {% if active_company and active_company.logo_filename %}
+      <img src="{{ url_for('static', filename='uploads/logos/' ~ active_company.logo_filename) }}" style="height:28px;object-fit:contain;" alt="Logo"/>
+    {% else %}
+      <i class="bi bi-building"></i>
+    {% endif %}
+    <div>
+      {{ active_company.short_name or active_company.name if active_company else 'HR Manager' }}
+      <small>Indian Payroll — Gujarat</small>
+    </div>
   </div>
+
   <nav class="sidebar-nav">
     <div class="sidebar-section">Main</div>
-    <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint == 'dashboard.index' }}">
+    <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint=='dashboard.index' }}">
       <i class="bi bi-speedometer2"></i> Dashboard
     </a>
 
     <div class="sidebar-section">Employees</div>
-    <a href="{{ url_for('employees.list_employees') }}" class="{{ 'active' if 'employees.' in (request.endpoint or '') }}">
+    <a href="{{ url_for('employees.list_employees') }}" class="{{ 'active' if request.endpoint=='employees.list_employees' }}">
       <i class="bi bi-people"></i> Employees
     </a>
     <a href="{{ url_for('employees.create_employee') }}">
       <i class="bi bi-person-plus"></i> Add Employee
     </a>
+    <a href="{{ url_for('employees.import_employees') }}">
+      <i class="bi bi-file-earmark-arrow-up"></i> Bulk Import
+    </a>
+
+    <div class="sidebar-section">Leave</div>
+    <a href="{{ url_for('leave.list_applications') }}" class="{{ 'active' if 'leave.' in (request.endpoint or '') }}">
+      <i class="bi bi-calendar-check"></i> Leave Register
+    </a>
+    <a href="{{ url_for('leave.apply') }}">
+      <i class="bi bi-calendar-plus"></i> Apply Leave
+    </a>
+    <a href="{{ url_for('leave.balances') }}">
+      <i class="bi bi-bar-chart"></i> Leave Balances
+    </a>
 
     <div class="sidebar-section">Payroll</div>
-    <a href="{{ url_for('payroll.index') }}" class="{{ 'active' if request.endpoint == 'payroll.index' }}">
+    <a href="{{ url_for('payroll.index') }}" class="{{ 'active' if request.endpoint=='payroll.index' }}">
       <i class="bi bi-cash-stack"></i> Payroll Register
     </a>
-    <a href="{{ url_for('payroll.run_payroll') }}" class="{{ 'active' if request.endpoint == 'payroll.run_payroll' }}">
+    <a href="{{ url_for('payroll.run_payroll') }}" class="{{ 'active' if request.endpoint=='payroll.run_payroll' }}">
       <i class="bi bi-play-circle"></i> Run Payroll
     </a>
-    <a href="{{ url_for('payroll.salary_sheet') }}" class="{{ 'active' if request.endpoint == 'payroll.salary_sheet' }}">
+    <a href="{{ url_for('payroll.salary_sheet') }}" class="{{ 'active' if request.endpoint=='payroll.salary_sheet' }}">
       <i class="bi bi-table"></i> Salary Sheet
+    </a>
+    <a href="{{ url_for('payroll.import_attendance') }}">
+      <i class="bi bi-file-earmark-spreadsheet"></i> Attendance Upload
     </a>
 
     <div class="sidebar-section">Advances</div>
@@ -119,41 +100,66 @@
     </a>
 
     <div class="sidebar-section">Reports</div>
-    <a href="{{ url_for('reports.tds_summary') }}" class="{{ 'active' if request.endpoint == 'reports.tds_summary' }}">
+    <a href="{{ url_for('reports.tds_summary') }}" class="{{ 'active' if request.endpoint=='reports.tds_summary' }}">
       <i class="bi bi-receipt"></i> TDS Summary
     </a>
-    <a href="{{ url_for('reports.lwf_summary') }}" class="{{ 'active' if request.endpoint == 'reports.lwf_summary' }}">
+    <a href="{{ url_for('reports.lwf_summary') }}" class="{{ 'active' if request.endpoint=='reports.lwf_summary' }}">
       <i class="bi bi-bank"></i> Gujarat LWF
     </a>
-    <a href="{{ url_for('reports.pt_summary') }}" class="{{ 'active' if request.endpoint == 'reports.pt_summary' }}">
-      <i class="bi bi-building-check"></i> Prof. Tax (PT)
+    <a href="{{ url_for('reports.pt_summary') }}" class="{{ 'active' if request.endpoint=='reports.pt_summary' }}">
+      <i class="bi bi-building-check"></i> Prof. Tax
     </a>
+
+    <div class="sidebar-section">Masters</div>
+    <a href="{{ url_for('masters.index') }}" class="{{ 'active' if 'masters.' in (request.endpoint or '') }}">
+      <i class="bi bi-sliders"></i> Setup Masters
+    </a>
+    <a href="{{ url_for('masters.departments') }}"><i class="bi bi-diagram-3"></i> Departments</a>
+    <a href="{{ url_for('masters.designations') }}"><i class="bi bi-person-badge"></i> Designations</a>
+    <a href="{{ url_for('masters.categories') }}"><i class="bi bi-tag"></i> Categories</a>
+    <a href="{{ url_for('masters.locations') }}"><i class="bi bi-geo-alt"></i> Locations</a>
+    <a href="{{ url_for('masters.leave_types') }}"><i class="bi bi-calendar3"></i> Leave Types</a>
 
     {% if current_user.is_admin() %}
     <div class="sidebar-section">Admin</div>
+    <a href="{{ url_for('company.list_companies') }}" class="{{ 'active' if 'company.' in (request.endpoint or '') }}">
+      <i class="bi bi-buildings"></i> Companies
+    </a>
     <a href="{{ url_for('auth.users') }}" class="{{ 'active' if 'auth.' in (request.endpoint or '') }}">
       <i class="bi bi-shield-lock"></i> Users
     </a>
     {% endif %}
   </nav>
-  <div style="padding:1rem 1.5rem; border-top:1px solid rgba(255,255,255,0.1)">
-    <div style="color:rgba(255,255,255,0.6); font-size:0.8rem">{{ current_user.username }}</div>
-    <a href="{{ url_for('auth.logout') }}" style="color:rgba(255,255,255,0.5); font-size:0.8rem; text-decoration:none;">
-      <i class="bi bi-box-arrow-left"></i> Logout
-    </a>
+
+  <div style="padding:.9rem 1.25rem;border-top:1px solid rgba(255,255,255,.1)">
+    <div style="color:rgba(255,255,255,.6);font-size:.8rem">{{ current_user.username }}</div>
+    <div class="d-flex gap-2 mt-1">
+      <a href="{{ url_for('company.select') }}" style="color:rgba(255,255,255,.5);font-size:.75rem;text-decoration:none" title="Switch company">
+        <i class="bi bi-arrow-left-right"></i> Switch
+      </a>
+      <a href="{{ url_for('auth.logout') }}" style="color:rgba(255,255,255,.5);font-size:.75rem;text-decoration:none">
+        <i class="bi bi-box-arrow-left"></i> Logout
+      </a>
+    </div>
   </div>
 </div>
+
 <div class="main-content">
   <div class="topbar">
     <span class="topbar-title">{% block page_title %}{% endblock %}</span>
     <div class="d-flex align-items-center gap-2">
+      {% if active_company %}
+        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-normal">
+          <i class="bi bi-building me-1"></i>{{ active_company.short_name or active_company.name }}
+        </span>
+      {% endif %}
       <span class="badge bg-secondary">{{ current_user.role|upper }}</span>
     </div>
   </div>
   <div class="page-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
           {{ message }}
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
@@ -165,7 +171,6 @@
 {% else %}
   {% block auth_content %}{% endblock %}
 {% endif %}
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% block extra_js %}{% endblock %}
 </body>

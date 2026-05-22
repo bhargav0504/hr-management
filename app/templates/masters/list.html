@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Add New {{ singular|title }}</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('masters.add_master', master_type=master_type) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          {% if show_type %}
+          <div class="mb-2">
+            <label class="form-label small">Type</label>
+            <select name="type" class="form-select form-select-sm">
+              <option value="staff">Staff</option>
+              <option value="worker">Worker</option>
+              <option value="management">Management</option>
+            </select>
+          </div>
+          {% endif %}
+          <div class="input-group">
+            <input type="text" name="name" class="form-control" placeholder="Enter name..." required/>
+            <button class="btn btn-primary" type="submit"><i class="bi bi-plus"></i> Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="mt-2">
+      <a href="{{ url_for('masters.index') }}" class="btn btn-outline-secondary btn-sm">← Back to Masters</a>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th>
+              {% if show_type %}<th>Type</th>{% endif %}
+              <th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted small">{{ loop.index }}</td>
+              <td>{{ item.name }}</td>
+              {% if show_type %}<td><span class="badge bg-secondary">{{ item.type }}</span></td>{% endif %}
+              <td><span class="badge bg-{{ 'success' if item.is_active else 'secondary' }}">{{ 'Active' if item.is_active else 'Inactive' }}</span></td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('masters.toggle_master', master_type=master_type, item_id=item.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-secondary">{{ 'Deactivate' if item.is_active else 'Activate' }}</button>
+                </form>
+                <form method="post" action="{{ url_for('masters.delete_master', master_type=master_type, item_id=item.id) }}" class="d-inline" onsubmit="return confirm('Delete {{ item.name }}?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No {{ title|lower }} set up yet. Add one →</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-muted small">{{ items|length }} record(s)</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

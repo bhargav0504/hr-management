@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Bulk Employee Import{% endblock %}
+{% block page_title %}Bulk Employee Import{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-file-earmark-arrow-down me-2"></i>Step 1 — Download Template</div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Download the Excel template, fill in employee details, and upload below.</p>
+        <a href="{{ url_for('employees.import_template') }}" class="btn btn-outline-primary">
+          <i class="bi bi-file-earmark-excel"></i> Download Template (.xlsx)
+        </a>
+        <div class="alert alert-info mt-3 py-2 small mb-0">
+          <strong>Tips:</strong> Columns marked * are required. Dates format: YYYY-MM-DD.
+          PF/ESIC/PT fields accept YES or NO. Salary fields are monthly amounts in ₹.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="bi bi-file-earmark-arrow-up me-2"></i>Step 2 — Upload Filled Template</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-3">
+            <label class="form-label">Select Excel File (.xlsx)</label>
+            <input type="file" name="file" class="form-control" accept=".xlsx" required/>
+          </div>
+          <button class="btn btn-success" type="submit"><i class="bi bi-upload me-1"></i>Import Employees</button>
+          <a href="{{ url_for('employees.list_employees') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

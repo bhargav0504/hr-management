@@ -1,18 +1,22 @@
 """
-Indian payroll calculation engine — matches April'26 salary sheet structure.
+Indian payroll calculation engine — Gujarat norms.
 
-PF    : Employee 12% of pf_wage_base (basic+HRA+other, excl. petrol) — capped at ₹15,000 if pf_on_ceiling
-        Employer: EPF 3.67% + EPS 8.33% (capped ₹1,250) + EDLI 0.5%
-ESIC  : Employee 0.75% | Employer 3.25% — only if gross_earned ≤ ₹21,000
-PT    : Gujarat Professional Tax — ₹200/month if gross_earned ≥ ₹12,000
-LWF   : Gujarat — ₹6 employee / ₹12 employer — June & December only
-Gratuity: 4.81% of basic (employer liability, not deducted from salary)
-Bonus : 8.33% of basic (statutory bonus)
-CTC   : gross_earned + employer PF + employer ESIC + gratuity
-TDS   : Projected annual income method, new or old regime (FY 2024-25)
+PF     : Employee 12% of pf_wage_base (excl. petrol, capped ₹15,000)
+         Employer: EPF 3.67% + EPS 8.33% (capped ₹1,250; zero if age ≥ 58) + EDLI 0.5%
+         All EPFO amounts rounded UP to nearest rupee (ECR filing standard).
+ESIC   : Employee 0.75% | Employer 3.25% of esic_wage_base (gross excl. petrol)
+         Applicable only if esic_wage_base ≤ ceiling (₹21,000)
+PT     : Gujarat — ₹200/month if gross_earned ≥ ₹12,000
+LWF    : Gujarat — ₹6 employee / ₹12 employer — June & December only
+Gratuity: 4.81% of basic (employer liability)
+Bonus  : 8.33% of basic (statutory bonus, capped at ₹3,500 base)
+CTC    : gross_earned + employer PF + employer ESIC + LWF employer + gratuity
+TDS    : Projected annual income method, new or old regime (FY 2024-25)
 """
 
+import math
 from decimal import Decimal, ROUND_HALF_UP
+from datetime import date as _date
 import calendar as _cal
 
 
@@ -25,23 +29,37 @@ def _round2(value):
 
 
 def _roundup(value):
-    """Round up to nearest integer (like Excel ROUNDUP(x, 0))."""
-    import math
+    """Round up to nearest integer — standard for EPFO ECR challan."""
     return Decimal(str(math.ceil(float(value))))
+
+
+def _employee_age(employee, year, month):
+    """Age in years at the first day of the payroll month."""
+    dob = getattr(employee, 'date_of_birth', None)
+    if not dob:
+        return 0
+    ref = _date(year, month, 1)
+    return (ref - dob).days // 365
 
 
 def calculate_payroll(employee, month: int, year: int,
                       present_days: float, total_working_days: int,
                       advance_deduction: float = 0,
                       other_deductions: float = 0,
+                      other_deductions_remarks: str = '',
                       ytd_tds: float = 0,
-                      config=None):
+                      config=None,
+                      extra_earnings: dict = None):
     """
-    Full payroll calculation for one employee. Returns dict for SalaryRecord.
+    Full payroll calculation for one employee.
+    extra_earnings: dict of {label: amount} for performance bonus / incentives added via attendance upload.
+    Returns dict for SalaryRecord.
     """
     if config is None:
         from flask import current_app
         config = current_app.config
+
+    extra_earnings = extra_earnings or {}
 
     ratio = _d(present_days) / _d(total_working_days) if total_working_days else _d(1)
 
@@ -55,9 +73,17 @@ def calculate_payroll(employee, month: int, year: int,
     conveyance = _round2(_d(employee.conveyance) * ratio)
     medical = _round2(_d(employee.medical_allowance) * ratio)
 
-    # PF wage base = earned gross EXCLUDING petrol allowance
+    # Extra earnings from attendance upload (performance bonus / incentives)
+    extra_total = _round2(sum(_d(v) for v in extra_earnings.values()))
+
+    # PF wage base = earned gross EXCLUDING petrol (also excluded: extra incentives)
     pf_wage_base = basic + hra + da + special + other_allow + conveyance + medical
-    gross_earned = pf_wage_base + petrol
+
+    # ESIC wage base = same as PF base (petrol/travel excluded per ESIC Act)
+    esic_wage_base = pf_wage_base
+
+    # Gross earned = all components including petrol + extra
+    gross_earned = pf_wage_base + petrol + extra_total
 
     # ── PF ───────────────────────────────────────────────────────────────────
     pf_employee = _d(0)
@@ -68,51 +94,63 @@ def calculate_payroll(employee, month: int, year: int,
 
     if employee.pf_applicable:
         pf_ceiling = _d(config.get('PF_WAGE_CEILING', 15000))
-        # Cap PF base at ₹15,000 if ceiling applies; directors may have no ceiling
         pf_base = pf_wage_base
         if getattr(employee, 'pf_on_ceiling', True):
             pf_base = min(pf_wage_base, pf_ceiling)
 
-        pf_employee = _round2(pf_base * _d('0.12'))
-        pf_employer_epf = _round2(pf_base * _d('0.0367'))
+        pf_employee = _roundup(pf_base * _d('0.12'))
+        pf_employer_epf = _roundup(pf_base * _d('0.0367'))
 
-        eps_base = min(pf_base, pf_ceiling)
-        pf_employer_eps_raw = eps_base * _d('0.0833')
-        eps_max = _d(config.get('EPS_MAX', 1250))
-        pf_employer_eps = _round2(min(pf_employer_eps_raw, eps_max))
+        # EPS wages = 0 if employee age ≥ 58 (EPFO circular)
+        age = _employee_age(employee, year, month)
+        pension_ok = getattr(employee, 'pension_eligible', True) and age < 58
+        if pension_ok:
+            eps_base = min(pf_base, pf_ceiling)
+            eps_max = _d(config.get('EPS_MAX', 1250))
+            pf_employer_eps = _roundup(min(eps_base * _d('0.0833'), eps_max))
+        else:
+            pf_employer_eps = _d(0)
 
-        pf_employer_edli = _round2(pf_base * _d('0.005'))
+        pf_employer_edli = _roundup(pf_base * _d('0.005'))
         pf_employer_total = pf_employer_epf + pf_employer_eps + pf_employer_edli
 
     # ── ESIC ─────────────────────────────────────────────────────────────────
     esic_employee = _d(0)
     esic_employer = _d(0)
-    esic_ceiling = _d(config.get('ESIC_CEILING', 21000))
 
-    if employee.esic_applicable and _d(employee.gross_salary) <= esic_ceiling:
-        esic_employee = _roundup(gross_earned * _d('0.0075'))
-        esic_employer = _roundup(gross_earned * _d('0.0325'))
+    # Use company-specific ceiling if available
+    company = getattr(employee, 'company', None)
+    esic_ceiling = _d(float(company.esic_ceiling) if company and company.esic_ceiling else
+                      config.get('ESIC_CEILING', 21000))
+
+    # Eligibility checked against esic_wage_base (actual earned, not defined gross)
+    if employee.esic_applicable and esic_wage_base <= esic_ceiling:
+        esic_employee = _roundup(esic_wage_base * _d('0.0075'))
+        esic_employer = _roundup(esic_wage_base * _d('0.0325'))
 
     # ── Professional Tax (Gujarat) ────────────────────────────────────────────
-    # ₹200/month if monthly gross ≥ ₹12,000; prorated gross may be lower on LOP
     pt = _d(0)
     if getattr(employee, 'pt_applicable', True):
-        if gross_earned >= _d(12000):
-            pt = _d(200)
+        pt_threshold = _d(float(company.pt_threshold) if company and company.pt_threshold else 12000)
+        pt_amount = _d(float(company.pt_amount) if company and company.pt_amount else 200)
+        if gross_earned >= pt_threshold:
+            pt = pt_amount
 
     # ── Gujarat LWF ───────────────────────────────────────────────────────────
     lwf_employee = _d(0)
     lwf_employer = _d(0)
     lwf_months = config.get('LWF_MONTHS', [6, 12])
-    if month in lwf_months:
+    lwf_applicable = True
+    if company:
+        lwf_applicable = company.lwf_applicable
+    if lwf_applicable and month in lwf_months:
         lwf_employee = _d(config.get('LWF_EMPLOYEE', 6))
         lwf_employer = _d(config.get('LWF_EMPLOYER', 12))
 
-    # ── Gratuity (employer liability, not deducted) ───────────────────────────
+    # ── Gratuity (employer liability) ─────────────────────────────────────────
     gratuity = _round2(basic * _d('0.0481'))
 
     # ── Statutory Bonus ───────────────────────────────────────────────────────
-    # 8.33% of basic (capped at ₹3,500/month per Payment of Bonus Act)
     bonus_base = min(basic, _d(3500))
     bonus = _round2(bonus_base * _d('0.0833'))
 
@@ -133,8 +171,6 @@ def calculate_payroll(employee, month: int, year: int,
     total_deductions = (pf_employee + esic_employee + pt + lwf_employee +
                         tds + advance_ded + other_ded)
     net_salary = _round2(gross_earned - total_deductions)
-
-    # CTC = gross_earned + all employer contributions
     ctc = _round2(gross_earned + pf_employer_total + esic_employer + lwf_employer + gratuity)
 
     return {
@@ -168,6 +204,7 @@ def calculate_payroll(employee, month: int, year: int,
         'tds': tds,
         'advance_deduction': advance_ded,
         'other_deductions': other_ded,
+        'other_deductions_remarks': other_deductions_remarks,
         'total_deductions': total_deductions,
         'net_salary': net_salary,
         'ctc': ctc,
@@ -177,10 +214,6 @@ def calculate_payroll(employee, month: int, year: int,
 def calculate_monthly_tds(employee, month: int, year: int,
                            gross_earned: float, pf_employee: float,
                            ytd_tds: float = 0, config=None):
-    """
-    Monthly TDS using projected annual income method.
-    Spreads remaining tax across remaining months of the financial year.
-    """
     fy_start_month = 4
     if month >= fy_start_month:
         months_elapsed = month - fy_start_month + 1
@@ -206,13 +239,12 @@ def _compute_annual_tax(annual_gross: float, annual_pf: float, regime: str) -> f
 
 
 def _new_regime_tax(annual_gross: float) -> float:
-    """New tax regime FY 2024-25 — standard deduction ₹75,000."""
+    """New tax regime FY 2025-26 — standard deduction ₹75,000."""
     taxable = max(0, annual_gross - 75000)
     if taxable <= 300000:
         return 0
-    # Rebate u/s 87A — no tax if taxable ≤ ₹7,00,000
     if taxable <= 700000:
-        return 0
+        return 0  # Rebate u/s 87A
     tax = 0
     slabs = [
         (300000, 0.00),
@@ -230,11 +262,11 @@ def _new_regime_tax(annual_gross: float) -> float:
         remaining -= in_slab
     if remaining > 0:
         tax += remaining * 0.30
-    return round(tax * 1.04, 2)  # + 4% cess
+    return round(tax * 1.04, 2)
 
 
 def _old_regime_tax(annual_gross: float, annual_pf: float) -> float:
-    """Old tax regime FY 2024-25 — standard deduction ₹50,000."""
+    """Old tax regime FY 2025-26 — standard deduction ₹50,000."""
     taxable = max(0, annual_gross - 50000 - annual_pf)
     if taxable <= 250000:
         return 0

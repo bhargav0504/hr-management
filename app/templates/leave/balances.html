@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Leave Balances{% endblock %}
+{% block page_title %}Leave Balances{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-3">
+  {% for y in range(2023, 2028) %}
+  <a href="{{ url_for('leave.balances', year=y) }}" class="btn btn-sm {{ 'btn-primary' if year==y else 'btn-outline-secondary' }}">{{ y }}</a>
+  {% endfor %}
+</div>
+{% if employees and leave_types %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0 small">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          {% for lt in leave_types %}<th class="text-center">{{ lt.code }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for emp in employees %}
+        <tr>
+          <td><strong>{{ emp.emp_code }}</strong> {{ emp.full_name }}</td>
+          {% for lt in leave_types %}
+            {% set bal = emp.leave_balances | selectattr('leave_type_id','eq',lt.id) | selectattr('year','eq',year) | first | default(none) %}
+            <td class="text-center">
+              {% if bal %}
+                <span class="text-success fw-bold">{{ bal.balance }}</span>
+                <span class="text-muted">/{{ bal.allocated }}</span>
+              {% else %}
+                <a href="#" data-bs-toggle="modal" data-bs-target="#allocModal"
+                   data-emp="{{ emp.id }}" data-lt="{{ lt.id }}" data-name="{{ emp.full_name }}" data-code="{{ lt.code }}"
+                   class="text-decoration-none text-muted">—</a>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal fade" id="allocModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header"><h6 class="modal-title">Allocate Leave</h6></div>
+      <form method="post" action="{{ url_for('leave.allocate') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="year" value="{{ year }}"/>
+        <input type="hidden" name="employee_id" id="modal_emp_id"/>
+        <input type="hidden" name="leave_type_id" id="modal_lt_id"/>
+        <div class="modal-body">
+          <p class="small mb-2" id="modal_label"></p>
+          <input type="number" name="days" class="form-control" placeholder="Days" min="0" step="0.5" required/>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-sm btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="alert alert-info">Set up employees and leave types first.</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.getElementById('allocModal')?.addEventListener('show.bs.modal', function(e) {
+    const btn = e.relatedTarget;
+    document.getElementById('modal_emp_id').value = btn.dataset.emp;
+    document.getElementById('modal_lt_id').value = btn.dataset.lt;
+    document.getElementById('modal_label').textContent = btn.dataset.name + ' — ' + btn.dataset.code;
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Upload{% endblock %}
+{% block page_title %}Attendance Upload{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-file-earmark-arrow-down me-2"></i>Step 1 — Download Template</div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Download the template (pre-filled with all active employees), fill in present days and
+          any performance bonus / incentives, then upload below.
+        </p>
+        <a href="{{ url_for('payroll.attendance_template') }}" class="btn btn-outline-success">
+          <i class="bi bi-file-earmark-excel"></i> Download Attendance Template
+        </a>
+        <div class="alert alert-info mt-3 py-2 small mb-0">
+          <strong>Columns:</strong> emp_code | present_days | performance_bonus | incentive | other_extra<br/>
+          You can add extra columns — they will be summed as additional earnings for that employee.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><i class="bi bi-upload me-2"></i>Step 2 — Upload &amp; Run Payroll</div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label class="form-label">Month *</label>
+              <select name="month" class="form-select" required>
+                {% for m_num, m_name in months %}
+                <option value="{{ m_num }}" {{ 'selected' if m_num == month }}>{{ m_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Year *</label>
+              <select name="year" class="form-select" required>
+                {% for y in years %}
+                <option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Total Working Days</label>
+              <input type="number" name="total_working_days" class="form-control" value="26" min="1" max="31"/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Select Filled Template (.xlsx)</label>
+            <input type="file" name="file" class="form-control" accept=".xlsx" required/>
+          </div>
+          <button class="btn btn-success" type="submit">
+            <i class="bi bi-play-circle me-1"></i>Upload &amp; Process Payroll
+          </button>
+          <a href="{{ url_for('payroll.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

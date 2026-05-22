@@ -6,6 +6,10 @@ __pycache__/
 *.db
 *.sqlite3
 instance/
+app/static/uploads/logos/*
+app/static/uploads/photos/*
+!app/static/uploads/logos/.gitkeep
+!app/static/uploads/photos/.gitkeep
 .env
 *.egg-info/
 dist/

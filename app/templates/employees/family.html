@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Family — {{ emp.full_name }}{% endblock %}
+{% block page_title %}Family Details — {{ emp.full_name }}{% endblock %}
+{% block content %}
+<div class="mb-3">
+  <a href="{{ url_for('employees.detail', emp_id=emp.id) }}" class="btn btn-outline-secondary btn-sm">← Back to Employee</a>
+</div>
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">Add Family Member</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('employees.add_family', emp_id=emp.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-2">
+            <label class="form-label small">Name *</label>
+            <input type="text" name="name" class="form-control form-control-sm" required/>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Relation *</label>
+            <select name="relation" class="form-select form-select-sm" required>
+              <option value="">— Select —</option>
+              <option>Spouse</option><option>Son</option><option>Daughter</option>
+              <option>Father</option><option>Mother</option><option>Brother</option>
+              <option>Sister</option><option>Other</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control form-control-sm"/>
+          </div>
+          <div class="mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="is_nominee" id="is_nominee"/>
+              <label class="form-check-label small" for="is_nominee">Nominee for PF/Gratuity</label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small">Nominee %</label>
+            <input type="number" name="nominee_percent" class="form-control form-control-sm" value="0" min="0" max="100"/>
+          </div>
+          <button class="btn btn-primary btn-sm w-100">Add Member</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">Family Members</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 small">
+          <thead><tr><th>Name</th><th>Relation</th><th>DOB</th><th>Nominee</th><th></th></tr></thead>
+          <tbody>
+            {% for m in emp.family_members %}
+            <tr>
+              <td>{{ m.name }}</td>
+              <td>{{ m.relation }}</td>
+              <td>{{ m.date_of_birth.strftime('%d %b %Y') if m.date_of_birth else '—' }}</td>
+              <td>
+                {% if m.is_nominee %}
+                  <span class="badge bg-success">{{ m.nominee_percent }}%</span>
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                <form method="post" action="{{ url_for('employees.delete_family', emp_id=emp.id, member_id=m.id) }}" onsubmit="return confirm('Remove?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted py-4">No family members added.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

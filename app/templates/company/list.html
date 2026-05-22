@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Companies{% endblock %}
+{% block page_title %}Companies{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <span class="text-muted small">{{ companies|length }} company(ies)</span>
+  <a href="{{ url_for('company.create_company') }}" class="btn btn-success btn-sm"><i class="bi bi-plus"></i> Add Company</a>
+</div>
+<div class="row g-3">
+  {% for co in companies %}
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3">
+          {% if co.logo_filename %}
+            <img src="{{ url_for('static', filename='uploads/logos/' ~ co.logo_filename) }}" style="height:48px;object-fit:contain;"/>
+          {% else %}
+            <i class="bi bi-buildings text-primary" style="font-size:2.5rem"></i>
+          {% endif %}
+          <div class="flex-grow-1">
+            <h6 class="mb-0">{{ co.name }}</h6>
+            <div class="text-muted small">{{ co.address or '' }}</div>
+            <div class="text-muted small">PF: {{ co.pf_no or '—' }} | ESIC: {{ co.esic_no or '—' }}</div>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('company.switch', company_id=co.id) }}" class="btn btn-sm btn-outline-primary" title="Select"><i class="bi bi-check-circle"></i></a>
+            <a href="{{ url_for('company.edit_company', company_id=co.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

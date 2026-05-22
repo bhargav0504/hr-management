@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Leave Types{% endblock %}
+{% block page_title %}Leave Types{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">Add Leave Type</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('masters.add_leave_type') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="row g-2">
+            <div class="col-4">
+              <label class="form-label small">Code *</label>
+              <input type="text" name="code" class="form-control form-control-sm text-uppercase" placeholder="PL" required maxlength="10"/>
+            </div>
+            <div class="col-8">
+              <label class="form-label small">Name *</label>
+              <input type="text" name="name" class="form-control form-control-sm" placeholder="Privilege Leave" required/>
+            </div>
+            <div class="col-4">
+              <label class="form-label small">Days/Year</label>
+              <input type="number" name="days_per_year" class="form-control form-control-sm" value="0" min="0"/>
+            </div>
+            <div class="col-4">
+              <label class="form-label small">Carry Fwd Max</label>
+              <input type="number" name="carry_forward_max" class="form-control form-control-sm" value="0" min="0"/>
+            </div>
+            <div class="col-4 d-flex align-items-end">
+              <div class="form-check form-switch pb-1">
+                <input class="form-check-input" type="checkbox" name="is_paid" id="is_paid" checked/>
+                <label class="form-check-label small" for="is_paid">Paid</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <button class="btn btn-primary btn-sm w-100" type="submit">Add Leave Type</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="mt-2">
+      <a href="{{ url_for('masters.index') }}" class="btn btn-outline-secondary btn-sm">← Back to Masters</a>
+    </div>
+    <div class="card mt-2">
+      <div class="card-body">
+        <p class="small text-muted mb-1"><strong>Standard Gujarat Leave Types:</strong></p>
+        <ul class="small text-muted mb-0 ps-3">
+          <li>PL — Privilege Leave (12–18 days/year, carry forward)</li>
+          <li>SL — Sick Leave (7 days, no carry forward)</li>
+          <li>CL — Casual Leave (7 days, no carry forward)</li>
+          <li>ML — Maternity Leave (26 weeks, Maternity Benefit Act)</li>
+          <li>EL — Earned Leave (as per Factory Act)</li>
+          <li>WO — Weekly Off (not deducted, for records)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Code</th><th>Name</th><th>Days/Yr</th><th>Carry Fwd</th><th>Paid</th><th></th></tr></thead>
+          <tbody>
+            {% for lt in items %}
+            <tr>
+              <td><code class="badge bg-primary bg-opacity-10 text-primary">{{ lt.code }}</code></td>
+              <td>{{ lt.name }}</td>
+              <td>{{ lt.days_per_year }}</td>
+              <td>{{ lt.carry_forward_max }}</td>
+              <td>
+                {% if lt.is_paid %}<i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}<i class="bi bi-x-circle text-muted"></i>{% endif %}
+              </td>
+              <td>
+                <form method="post" action="{{ url_for('masters.delete_leave_type', item_id=lt.id) }}" class="d-inline" onsubmit="return confirm('Delete?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">No leave types added yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
