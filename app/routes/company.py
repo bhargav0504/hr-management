@@ -41,7 +41,7 @@ class CompanyForm(FlaskForm):
 @login_required
 def select():
     companies = Company.query.filter_by(is_active=True).order_by(Company.name).all()
-    if len(companies) == 1:
+    if len(companies) == 1 and not current_user.is_admin():
         session['company_id'] = companies[0].id
         return redirect(url_for('dashboard.index'))
     if not companies:
