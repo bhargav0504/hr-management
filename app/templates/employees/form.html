@@ -76,8 +76,9 @@
             {{ form.category(class="form-select") }}
           </div>
           <div class="col-md-3">
-            <label class="form-label">Location</label>
-            {{ form.location(class="form-select") }}
+            <label class="form-label">Location *</label>
+            {{ form.location(class="form-select" + (" is-invalid" if form.location.errors else "")) }}
+            {% for e in form.location.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
           </div>
           <div class="col-md-2">
             <label class="form-label">Employment Type</label>
@@ -94,6 +95,10 @@
           <div class="col-md-2">
             <label class="form-label">City</label>
             {{ form.city(class="form-control") }}
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">State</label>
+            {{ form.state(class="form-control") }}
           </div>
           <div class="col-md-12">
             <label class="form-label">Address</label>

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Salary Components{% endblock %}
+{% block page_title %}Salary Components{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Add Component</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('masters.add_salary_component') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="mb-2">
+            <label class="form-label small">Name *</label>
+            <input type="text" name="name" class="form-control form-control-sm" placeholder="e.g. HRA, Performance Bonus" required/>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Type</label>
+            <select name="component_type" class="form-select form-select-sm">
+              <option value="earning">Earning</option>
+              <option value="deduction">Deduction</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_taxable" id="taxable" checked/>
+              <label class="form-check-label small">Taxable</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_pf_included" id="pfIncl" checked/>
+              <label class="form-check-label small">Included in PF Wage</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_esic_included" id="esicIncl" checked/>
+              <label class="form-check-label small">Included in ESIC Wage</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" name="is_statutory" id="stat"/>
+              <label class="form-check-label small">Statutory (PF/ESIC/PT/LWF)</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w-100">Add Component</button>
+        </form>
+      </div>
+    </div>
+    <div class="mt-2">
+      <a href="{{ url_for('masters.index') }}" class="btn btn-outline-secondary btn-sm">← Back to Masters</a>
+    </div>
+  </div>
+  <div class="col-md-8">
+    {% set earnings = items | selectattr('component_type', 'equalto', 'earning') | list %}
+    {% set deductions = items | selectattr('component_type', 'equalto', 'deduction') | list %}
+
+    <div class="card mb-3">
+      <div class="card-header fw-semibold text-success"><i class="bi bi-plus-circle me-2"></i>Earnings ({{ earnings|length }})</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 small">
+          <thead><tr><th>Name</th><th>Taxable</th><th>PF Wage</th><th>ESIC Wage</th><th>Statutory</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for sc in earnings %}
+            <tr>
+              <td class="fw-semibold">{{ sc.name }}</td>
+              <td>{{ '✓' if sc.is_taxable else '—' }}</td>
+              <td>{{ '✓' if sc.is_pf_included else '—' }}</td>
+              <td>{{ '✓' if sc.is_esic_included else '—' }}</td>
+              <td>{{ '✓' if sc.is_statutory else '—' }}</td>
+              <td><span class="badge bg-{{ 'success' if sc.is_active else 'secondary' }}">{{ 'Active' if sc.is_active else 'Off' }}</span></td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('masters.toggle_salary_component', sc_id=sc.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-secondary">{{ 'Off' if sc.is_active else 'On' }}</button>
+                </form>
+                <form method="post" action="{{ url_for('masters.delete_salary_component', sc_id=sc.id) }}" class="d-inline" onsubmit="return confirm('Delete?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-muted text-center py-2">No earnings defined.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header fw-semibold text-danger"><i class="bi bi-dash-circle me-2"></i>Deductions ({{ deductions|length }})</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 small">
+          <thead><tr><th>Name</th><th>Taxable</th><th>PF Wage</th><th>ESIC Wage</th><th>Statutory</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {% for sc in deductions %}
+            <tr>
+              <td class="fw-semibold">{{ sc.name }}</td>
+              <td>{{ '✓' if sc.is_taxable else '—' }}</td>
+              <td>{{ '✓' if sc.is_pf_included else '—' }}</td>
+              <td>{{ '✓' if sc.is_esic_included else '—' }}</td>
+              <td>{{ '✓' if sc.is_statutory else '—' }}</td>
+              <td><span class="badge bg-{{ 'success' if sc.is_active else 'secondary' }}">{{ 'Active' if sc.is_active else 'Off' }}</span></td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('masters.toggle_salary_component', sc_id=sc.id) }}" class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-secondary">{{ 'Off' if sc.is_active else 'On' }}</button>
+                </form>
+                <form method="post" action="{{ url_for('masters.delete_salary_component', sc_id=sc.id) }}" class="d-inline" onsubmit="return confirm('Delete?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-muted text-center py-2">No deductions defined.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

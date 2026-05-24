@@ -33,6 +33,7 @@ class Employee(db.Model):
     email = db.Column(db.String(120), nullable=True)
     address = db.Column(db.Text, nullable=True)
     city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(50), nullable=True)
 
     # Statutory IDs
     pan_number = db.Column(db.String(10), nullable=True)

@@ -128,24 +128,48 @@ def calculate_payroll(employee, month: int, year: int,
         esic_employee = _roundup(esic_wage_base * _d('0.0075'))
         esic_employer = _roundup(esic_wage_base * _d('0.0325'))
 
-    # ── Professional Tax (Gujarat) ────────────────────────────────────────────
+    # ── Look up Location for state-specific PT/LWF settings ──────────────────
+    loc_obj = None
+    emp_location = getattr(employee, 'location', None)
+    emp_company_id = getattr(employee, 'company_id', None)
+    if emp_location and emp_company_id:
+        try:
+            from app.models.masters import Location as _Location
+            loc_obj = _Location.query.filter_by(
+                company_id=emp_company_id, name=emp_location).first()
+        except Exception:
+            pass
+
+    # ── Professional Tax — use location settings if available ────────────────
     pt = _d(0)
     if getattr(employee, 'pt_applicable', True):
-        pt_threshold = _d(float(company.pt_threshold) if company and company.pt_threshold else 12000)
-        pt_amount = _d(float(company.pt_amount) if company and company.pt_amount else 200)
-        if gross_earned >= pt_threshold:
-            pt = pt_amount
+        if loc_obj is not None:
+            pt_on = loc_obj.pt_applicable
+            pt_threshold = _d(float(loc_obj.pt_threshold or 12000))
+            pt_amount_val = _d(float(loc_obj.pt_amount or 200))
+        else:
+            pt_on = True
+            pt_threshold = _d(float(company.pt_threshold) if company and company.pt_threshold else 12000)
+            pt_amount_val = _d(float(company.pt_amount) if company and company.pt_amount else 200)
+        if pt_on and gross_earned >= pt_threshold:
+            pt = pt_amount_val
 
-    # ── Gujarat LWF ───────────────────────────────────────────────────────────
+    # ── LWF — use location settings if available ──────────────────────────────
     lwf_employee = _d(0)
     lwf_employer = _d(0)
-    lwf_months = config.get('LWF_MONTHS', [6, 12])
-    lwf_applicable = True
-    if company:
-        lwf_applicable = company.lwf_applicable
-    if lwf_applicable and month in lwf_months:
-        lwf_employee = _d(config.get('LWF_EMPLOYEE', 6))
-        lwf_employer = _d(config.get('LWF_EMPLOYER', 12))
+    if loc_obj is not None:
+        lwf_applicable = loc_obj.lwf_applicable
+        lwf_month_list = loc_obj.lwf_month_list
+        lwf_emp_amt = _d(float(loc_obj.lwf_employee or 6))
+        lwf_er_amt = _d(float(loc_obj.lwf_employer or 12))
+    else:
+        lwf_applicable = company.lwf_applicable if company else True
+        lwf_month_list = config.get('LWF_MONTHS', [6, 12])
+        lwf_emp_amt = _d(config.get('LWF_EMPLOYEE', 6))
+        lwf_er_amt = _d(config.get('LWF_EMPLOYER', 12))
+    if lwf_applicable and month in lwf_month_list:
+        lwf_employee = lwf_emp_amt
+        lwf_employer = lwf_er_amt
 
     # ── Gratuity (employer liability) ─────────────────────────────────────────
     gratuity = _round2(basic * _d('0.0481'))

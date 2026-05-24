@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}Edit Location — {{ loc.name }}{% endblock %}
+{% block page_title %}Edit Location: {{ loc.name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="card mb-3">
+        <div class="card-header">Basic Details</div>
+        <div class="card-body row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Location Name *</label>
+            <input type="text" name="name" class="form-control" value="{{ loc.name }}" required/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">State</label>
+            <select name="state" class="form-select" id="stateSelect">
+              {% for s in states %}
+              <option value="{{ s }}" {{ 'selected' if s == loc.state }}>{{ s or '— Select State —' }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <textarea name="address" class="form-control" rows="2">{{ loc.address or '' }}</textarea>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">PF Code</label>
+            <input type="text" name="pf_code" class="form-control" value="{{ loc.pf_code or '' }}"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">ESIC Code</label>
+            <input type="text" name="esic_code" class="form-control" value="{{ loc.esic_code or '' }}"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">P Tax Code</label>
+            <input type="text" name="pt_code" class="form-control" value="{{ loc.pt_code or '' }}"/>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">LWF Code</label>
+            <input type="text" name="lwf_code" class="form-control" value="{{ loc.lwf_code or '' }}"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">Professional Tax (PT)</div>
+        <div class="card-body row g-3 align-items-end">
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" name="pt_applicable" id="ptApplicable" {{ 'checked' if loc.pt_applicable }}/>
+              <label class="form-check-label">PT Applicable</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Gross Threshold (₹)</label>
+            <input type="number" name="pt_threshold" class="form-control" value="{{ loc.pt_threshold|int }}" id="ptThreshold"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Monthly PT Amount (₹)</label>
+            <input type="number" name="pt_amount" class="form-control" value="{{ loc.pt_amount|int }}" id="ptAmount"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">Labour Welfare Fund (LWF)</div>
+        <div class="card-body row g-3 align-items-end">
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" name="lwf_applicable" {{ 'checked' if loc.lwf_applicable }}/>
+              <label class="form-check-label">LWF Applicable</label>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Employee (₹)</label>
+            <input type="number" name="lwf_employee" class="form-control" value="{{ loc.lwf_employee }}" step="0.01"/>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Employer (₹)</label>
+            <input type="number" name="lwf_employer" class="form-control" value="{{ loc.lwf_employer }}" step="0.01"/>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Deduction Months (comma-separated)</label>
+            <input type="text" name="lwf_months" class="form-control" value="{{ loc.lwf_months or '6,12' }}"/>
+            <div class="form-text">6 = June, 12 = December</div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+      <a href="{{ url_for('masters.list_locations') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const ptDefaults = {{ {
+  'Gujarat': [12000, 200], 'Maharashtra': [10000, 200], 'Karnataka': [15000, 200],
+  'Tamil Nadu': [21000, 208], 'West Bengal': [10000, 200], 'Andhra Pradesh': [15000, 200],
+  'Telangana': [15000, 200], 'Madhya Pradesh': [18750, 208], 'Odisha': [15000, 200],
+  'Kerala': [12000, 208]
+} | tojson }};
+document.getElementById('stateSelect')?.addEventListener('change', function() {
+  const d = ptDefaults[this.value];
+  if (d) {
+    document.getElementById('ptThreshold').value = d[0];
+    document.getElementById('ptAmount').value = d[1];
+  }
+});
+</script>
+{% endblock %}

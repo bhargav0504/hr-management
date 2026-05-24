@@ -48,7 +48,7 @@ class EmployeeForm(FlaskForm):
     emp_code = StringField('Employee Code *', validators=[DataRequired(), Length(1, 20)])
     first_name = StringField('First Name *', validators=[DataRequired(), Length(1, 100)])
     last_name = StringField('Last Name *', validators=[DataRequired(), Length(1, 100)])
-    gender = SelectField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')])
+    gender = SelectField('Gender', choices=[('Male', 'Male'), ('Female', 'Female'), ('Transgender', 'Transgender')])
     marital_status = SelectField('Marital Status', choices=[('Single', 'Single'), ('Married', 'Married')])
     father_husband_name = StringField('Father / Husband Name', validators=[Optional(), Length(max=200)])
     date_of_birth = DateField('Date of Birth', validators=[Optional()])
@@ -57,7 +57,7 @@ class EmployeeForm(FlaskForm):
     reason_for_leaving = SelectField('Reason for Leaving', choices=LEAVING_REASONS)
     leaving_remarks = TextAreaField('Leaving Remarks', validators=[Optional()])
     department = SelectField('Department *', choices=[], validators=[DataRequired()])
-    location = SelectField('Location', choices=[])
+    location = SelectField('Location *', choices=[], validators=[DataRequired()])
     designation = SelectField('Designation *', choices=[], validators=[DataRequired()])
     category = SelectField('Category', choices=[])
     employment_type = SelectField('Employment Type',
@@ -66,6 +66,7 @@ class EmployeeForm(FlaskForm):
     email = StringField('Email', validators=[Optional(), Length(max=120)])
     address = TextAreaField('Address', validators=[Optional()])
     city = StringField('City', validators=[Optional(), Length(max=100)])
+    state = StringField('State', validators=[Optional(), Length(max=50)])
     pan_number = StringField('PAN Number', validators=[Optional(), Length(max=10)])
     aadhaar_number = StringField('Aadhaar Number', validators=[Optional(), Length(max=12)])
     uan_number = StringField('UAN Number (PF)', validators=[Optional(), Length(max=12)])
@@ -96,7 +97,8 @@ def _set_master_choices(form, company_id):
     form.designation.choices = _master_choices(Designation, company_id)
     form.category.choices = [('', '— Select —')] + [(c.name, f'{c.name} ({c.type})') for c in
                               Category.query.filter_by(company_id=company_id, is_active=True).order_by(Category.name).all()]
-    form.location.choices = _master_choices(Location, company_id)
+    locs = Location.query.filter_by(company_id=company_id, is_active=True).order_by(Location.name).all()
+    form.location.choices = [('', '— Select Location —')] + [(l.name, l.name) for l in locs]
 
 
 @employees_bp.route('/')
@@ -378,7 +380,7 @@ def _populate_employee(emp, form):
         'father_husband_name', 'date_of_birth', 'date_of_joining', 'date_of_leaving',
         'reason_for_leaving', 'leaving_remarks',
         'department', 'location', 'designation', 'category', 'employment_type',
-        'mobile', 'email', 'address', 'city',
+        'mobile', 'email', 'address', 'city', 'state',
         'pan_number', 'aadhaar_number', 'uan_number', 'esic_ip_number',
         'bank_account', 'bank_name', 'ifsc_code',
         'gross_ctc', 'basic_salary', 'hra', 'da', 'special_allowance', 'other_allowance',

@@ -32,6 +32,7 @@ class Company(db.Model):
     categories = db.relationship('Category', back_populates='company', cascade='all,delete-orphan')
     locations = db.relationship('Location', back_populates='company', cascade='all,delete-orphan')
     leave_types = db.relationship('LeaveType', back_populates='company', cascade='all,delete-orphan')
+    salary_components = db.relationship('SalaryComponent', back_populates='company', cascade='all,delete-orphan')
 
     def __repr__(self):
         return f'<Company {self.name}>'

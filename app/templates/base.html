@@ -112,13 +112,14 @@
     </a>
 
     <div class="sidebar-section">Masters</div>
-    <a href="{{ url_for('masters.index') }}" class="{{ 'active' if 'masters.' in (request.endpoint or '') }}">
+    <a href="{{ url_for('masters.index') }}" class="{{ 'active' if request.endpoint == 'masters.index' }}">
       <i class="bi bi-sliders"></i> Setup Masters
     </a>
     <a href="{{ url_for('masters.departments') }}"><i class="bi bi-diagram-3"></i> Departments</a>
     <a href="{{ url_for('masters.designations') }}"><i class="bi bi-person-badge"></i> Designations</a>
     <a href="{{ url_for('masters.categories') }}"><i class="bi bi-tag"></i> Categories</a>
-    <a href="{{ url_for('masters.locations') }}"><i class="bi bi-geo-alt"></i> Locations</a>
+    <a href="{{ url_for('masters.list_locations') }}"><i class="bi bi-geo-alt"></i> Locations</a>
+    <a href="{{ url_for('masters.salary_components') }}"><i class="bi bi-cash-coin"></i> Salary Components</a>
     <a href="{{ url_for('masters.leave_types') }}"><i class="bi bi-calendar3"></i> Leave Types</a>
 
     {% if current_user.is_admin() %}
