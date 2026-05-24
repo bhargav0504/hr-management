@@ -33,9 +33,13 @@
   </div>
 
   {% if companies %}
-  <div class="row g-3 mb-4">
+  <div class="mb-3">
+    <input type="text" id="coSearch" class="form-control form-control-lg"
+           placeholder="&#128269; Search company..." oninput="filterCo(this.value)" autocomplete="off"/>
+  </div>
+  <div class="row g-3 mb-4" id="coGrid">
     {% for co in companies %}
-    <div class="col-md-4">
+    <div class="col-md-4 co-col" data-name="{{ co.name|lower }}{{ (' ' ~ co.short_name)|lower if co.short_name else '' }}">
       <a href="{{ url_for('company.switch', company_id=co.id) }}" class="company-card">
         <div class="card-body">
           {% if co.logo_filename %}
@@ -51,6 +55,7 @@
       </a>
     </div>
     {% endfor %}
+    <div id="noResult" class="col-12 text-center text-muted py-4" style="display:none">No company matched your search.</div>
   </div>
   {% else %}
   <div class="alert alert-warning text-center">
@@ -73,5 +78,18 @@
   {% endif %}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function filterCo(q) {
+  q = q.toLowerCase().trim();
+  let shown = 0;
+  document.querySelectorAll('.co-col').forEach(col => {
+    const match = !q || col.dataset.name.includes(q);
+    col.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  document.getElementById('noResult').style.display = shown === 0 ? '' : 'none';
+}
+document.getElementById('coSearch')?.focus();
+</script>
 </body>
 </html>

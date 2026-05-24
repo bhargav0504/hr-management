@@ -36,7 +36,7 @@ class UserForm(FlaskForm):
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard.index'))
+        return redirect(url_for('company.select'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -44,7 +44,7 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
             flash(f'Welcome, {user.username}!', 'success')
-            return redirect(next_page or url_for('dashboard.index'))
+            return redirect(next_page or url_for('company.select'))
         flash('Invalid username or password.', 'danger')
     return render_template('auth/login.html', form=form)
 
