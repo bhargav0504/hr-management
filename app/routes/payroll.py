@@ -69,15 +69,19 @@ def run_payroll():
                 skipped += 1
                 continue
 
-            # Present days from form (default = total_days)
-            present_key = f'present_{emp.id}'
-            present_days = float(request.form.get(present_key, total_days))
+            # Per-employee overrides from form
+            present_days = float(request.form.get(f'present_{emp.id}', total_days))
+            extra_incentive = float(request.form.get(f'incentive_{emp.id}', 0) or 0)
+            overtime_amt = float(request.form.get(f'overtime_{emp.id}', 0) or 0)
+            manual_advance = request.form.get(f'advance_{emp.id}', '').strip()
+            tds_override = request.form.get(f'tds_{emp.id}', '').strip()
 
-            # Advance deduction
-            advance_deduction = _get_advance_deduction(emp, month, year)
-
-            # YTD TDS
+            advance_deduction = float(manual_advance) if manual_advance else _get_advance_deduction(emp, month, year)
             ytd_tds = _get_ytd_tds(emp, month, year)
+
+            extra = {}
+            if extra_incentive: extra['incentive'] = extra_incentive
+            if overtime_amt: extra['overtime'] = overtime_amt
 
             data = calculate_payroll(
                 employee=emp,
@@ -88,7 +92,10 @@ def run_payroll():
                 advance_deduction=advance_deduction,
                 ytd_tds=ytd_tds,
                 config=current_app.config,
+                extra_earnings=extra,
             )
+            if tds_override:
+                data['tds'] = float(tds_override)
             record = SalaryRecord(employee_id=emp.id, **data)
             record.status = 'processed'
             record.processed_at = datetime.utcnow()
@@ -98,7 +105,7 @@ def run_payroll():
 
         db.session.commit()
         flash(f'Payroll processed: {created} records created, {skipped} already existed.', 'success')
-        return redirect(url_for('payroll.index', month=month, year=year))
+        return redirect(url_for('payroll.salary_sheet', month=month, year=year))
 
     # GET — show form
     month = int(request.args.get('month', today.month))
@@ -152,6 +159,62 @@ def edit_record(record_id):
         flash('Record updated.', 'success')
         return redirect(url_for('payroll.record_detail', record_id=record.id))
     return render_template('payroll/edit_record.html', record=record)
+
+
+@payroll_bp.route('/bulk-edit', methods=['GET', 'POST'])
+@login_required
+def bulk_edit():
+    company_id = session.get('company_id')
+    today = date.today()
+    month = int(request.args.get('month', request.form.get('month', today.month)))
+    year = int(request.args.get('year', request.form.get('year', today.year)))
+
+    records = (
+        SalaryRecord.query.join(Employee)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
+        .order_by(Employee.emp_code).all()
+    )
+
+    if request.method == 'POST' and request.form.get('action') == 'save':
+        updated = 0
+        for record in records:
+            rid = record.id
+            emp = record.employee
+            new_days = float(request.form.get(f'days_{rid}', record.present_days))
+            new_adv = float(request.form.get(f'adv_{rid}', record.advance_deduction) or 0)
+            new_other = float(request.form.get(f'other_{rid}', record.other_deductions) or 0)
+            new_other_rem = request.form.get(f'other_rem_{rid}', record.other_deductions_remarks or '')
+            new_tds = request.form.get(f'tds_{rid}', '').strip()
+
+            data = calculate_payroll(
+                employee=emp,
+                month=record.month, year=record.year,
+                present_days=new_days,
+                total_working_days=record.total_working_days,
+                advance_deduction=new_adv,
+                other_deductions=new_other,
+                other_deductions_remarks=new_other_rem,
+                ytd_tds=_get_ytd_tds(emp, record.month, record.year, exclude_id=rid),
+                config=current_app.config,
+            )
+            for k, v in data.items():
+                setattr(record, k, v)
+            if new_tds:
+                record.tds = float(new_tds)
+            record.other_deductions_remarks = new_other_rem
+            record.status = 'processed'
+            record.processed_at = datetime.utcnow()
+            record.processed_by = current_user.id
+            updated += 1
+        db.session.commit()
+        flash(f'{updated} records updated.', 'success')
+        return redirect(url_for('payroll.salary_sheet', month=month, year=year))
+
+    months = [(i, calendar.month_name[i]) for i in range(1, 13)]
+    years = list(range(2020, today.year + 2))
+    return render_template('payroll/bulk_edit.html', records=records,
+                           month=month, year=year, months=months, years=years)
 
 
 @payroll_bp.route('/record/<int:record_id>/delete', methods=['POST'])
@@ -308,13 +371,13 @@ def attendance_template():
     wb = Workbook()
     ws = wb.active
     ws.title = 'Attendance'
-    headers = ['emp_code', 'present_days', 'performance_bonus', 'incentive', 'other_extra']
+    headers = ['emp_code', 'present_days', 'performance_bonus', 'incentive', 'overtime_hours', 'overtime_amount', 'other_extra']
     ws.append(headers)
     for cell in ws[1]:
         cell.font = Font(bold=True, color='FFFFFF')
         cell.fill = PatternFill('solid', fgColor='059669')
     for emp in employees:
-        ws.append([emp.emp_code, 26, 0, 0, 0])
+        ws.append([emp.emp_code, 26, 0, 0, 0, 0, 0])
     for col in ws.columns:
         ws.column_dimensions[col[0].column_letter].width = 18
     buf = io.BytesIO()
@@ -363,6 +426,9 @@ def import_attendance():
                 val = data.get(key, 0)
                 if val:
                     extra[key] = float(val)
+            overtime_amt = float(data.get('overtime_amount', 0) or 0)
+            if overtime_amt:
+                extra['overtime'] = overtime_amt
             advance_deduction = _get_advance_deduction(emp, month, year)
             ytd_tds = _get_ytd_tds(emp, month, year)
             calc_data = calculate_payroll(

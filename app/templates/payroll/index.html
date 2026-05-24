@@ -26,6 +26,11 @@
         <a href="{{ url_for('payroll.export_pf_challan', month=month, year=year) }}" class="btn btn-outline-secondary btn-sm">PF Challan</a>
         <a href="{{ url_for('payroll.export_esic_challan', month=month, year=year) }}" class="btn btn-outline-secondary btn-sm">ESIC Challan</a>
         <a href="{{ url_for('payroll.export_pt_challan', month=month, year=year) }}" class="btn btn-outline-secondary btn-sm">PT Challan</a>
+        {% if records %}
+        <a href="{{ url_for('payroll.bulk_edit', month=month, year=year) }}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-pencil-square"></i> Bulk Edit
+        </a>
+        {% endif %}
       </div>
     </form>
   </div>

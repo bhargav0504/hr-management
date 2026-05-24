@@ -262,41 +262,57 @@ def export_pf_challan(records, month: int, year: int, config) -> bytes:
     company = config.get('COMPANY_NAME', 'Company')
     pf_no = config.get('COMPANY_PF_NO', '')
 
-    ws.merge_cells('A1:K1')
+    NCOLS = 17
+    ws.merge_cells(f'A1:{get_column_letter(NCOLS)}1')
     ws['A1'] = f'PF CHALLAN — {company.upper()} — {calendar.month_name[month].upper()} {year}'
     ws['A1'].font = Font(bold=True, size=13, color=DKBLUE)
     ws['A1'].alignment = Alignment(horizontal='center')
     ws.row_dimensions[1].height = 22
 
     if pf_no:
-        ws.merge_cells('A2:K2')
+        ws.merge_cells(f'A2:{get_column_letter(NCOLS)}2')
         ws['A2'] = f'PF Registration No.: {pf_no}'
         ws['A2'].alignment = Alignment(horizontal='center')
 
     hdrs = [
         ('Sr.', 5), ('UAN', 15), ('Employee Name', 24), ('Emp Code', 10),
-        ('PF Wages\n(₹)', 12), ('Employee PF\n12% (₹)', 13),
-        ('Employer EPF\n3.67% (₹)', 14), ('Employer EPS\n8.33% (₹)', 14),
-        ('EDLI\n0.5% (₹)', 11), ('Total ER\nContrib. (₹)', 14), ('Total\nChallan (₹)', 14),
+        ('Gross\nSalary (₹)', 13), ('EPF Wages\n(₹)', 13),
+        ('EPS Wages\n(₹)', 13), ('EDLI Wages\n(₹)', 13),
+        ('NCP\nDays', 8), ('Refund of\nAdvance (₹)', 13),
+        ('EE PF\n12% (₹)', 12), ('ER EPF\n3.67% (₹)', 13),
+        ('ER EPS\n8.33% (₹)', 13), ('EDLI\n0.5% (₹)', 11),
+        ('Admin\nCharges (₹)', 12), ('Total ER\nContrib. (₹)', 14),
+        ('Total\nChallan (₹)', 14),
     ]
     for ci, (h, w) in enumerate(hdrs, 1):
         _hdr(ws, 3, ci, h, bg=DKBLUE)
         ws.column_dimensions[get_column_letter(ci)].width = w
-    ws.row_dimensions[3].height = 30
+    ws.row_dimensions[3].height = 34
 
     pf_recs = [r for r in records if r.employee.pf_applicable]
     for ri, r in enumerate(pf_recs, 1):
         row = ri + 3
         emp = r.employee
         bg = WHITE if ri % 2 == 0 else LGRAY
+        gross = float(r.gross_earned or 0)
+        epf_wages = float(r.pf_wage_base or 0)
+        eps_wages = min(epf_wages, 15000.0)
+        edli_wages = epf_wages
+        ncp_days = max(0, float(r.total_working_days or 26) - float(r.present_days or 0))
+        refund_adv = 0.0
         ee_pf = float(r.pf_employee or 0)
         er_epf = float(r.pf_employer_epf or 0)
         er_eps = float(r.pf_employer_eps or 0)
         er_edli = float(r.pf_employer_edli or 0)
+        admin_charges = math.ceil(epf_wages * 0.005)
         er_total = float(r.pf_employer_total or 0)
-        row_data = [ri, emp.uan_number or '', emp.full_name, emp.emp_code,
-                    float(r.pf_wage_base or 0), ee_pf, er_epf, er_eps,
-                    er_edli, er_total, ee_pf + er_total]
+        row_data = [
+            ri, emp.uan_number or '', emp.full_name, emp.emp_code,
+            gross, epf_wages, eps_wages, edli_wages,
+            ncp_days, refund_adv,
+            ee_pf, er_epf, er_eps, er_edli,
+            admin_charges, er_total, ee_pf + er_total,
+        ]
         for ci, val in enumerate(row_data, 1):
             c = ws.cell(row=row, column=ci, value=val)
             c.fill = PatternFill('solid', fgColor=bg)
@@ -305,6 +321,8 @@ def export_pf_challan(records, month: int, year: int, config) -> bytes:
             if ci >= 5:
                 c.number_format = '#,##0.00'
                 c.alignment = Alignment(horizontal='right', vertical='center')
+            if ci == 9:  # NCP days — show as integer-ish
+                c.number_format = '0.##'
 
     # Totals
     tr = len(pf_recs) + 4
@@ -313,7 +331,7 @@ def export_pf_challan(records, month: int, year: int, config) -> bytes:
     tc.font = Font(bold=True, color=WHITE)
     tc.fill = PatternFill('solid', fgColor=DKBLUE)
     tc.alignment = Alignment(horizontal='center')
-    for ci in range(5, 12):
+    for ci in range(5, NCOLS + 1):
         vals = [ws.cell(row=ri+3, column=ci).value or 0 for ri in range(1, len(pf_recs)+1)]
         c = ws.cell(row=tr, column=ci, value=sum(vals))
         c.number_format = '#,##0.00'

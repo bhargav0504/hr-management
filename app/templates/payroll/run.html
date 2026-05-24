@@ -32,13 +32,23 @@
   </div>
 
   <div class="card">
-    <div class="card-header d-flex justify-content-between">
-      <span>Employee Present Days</span>
-      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setAll()">Set All to Max Days</button>
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Employee Details &amp; Overrides</span>
+      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setAll()">Set All Days to Max</button>
     </div>
     <div class="table-responsive">
-      <table class="table table-hover table-sm mb-0 small">
-        <thead><tr><th>Emp Code</th><th>Name</th><th>Department</th><th>Gross CTC</th><th>PF</th><th>ESIC</th><th style="width:120px">Present Days</th></tr></thead>
+      <table class="table table-hover table-sm mb-0" style="font-size:.83rem">
+        <thead class="table-secondary">
+          <tr>
+            <th>Code</th><th>Name</th><th>Dept</th><th>Gross CTC</th>
+            <th>PF</th><th>ESIC</th>
+            <th style="width:95px">Present Days</th>
+            <th style="width:110px">Incentive (₹)</th>
+            <th style="width:110px">Overtime (₹)</th>
+            <th style="width:120px">Advance Ded. (₹)</th>
+            <th style="width:120px">TDS Override (₹)</th>
+          </tr>
+        </thead>
         <tbody>
           {% for emp in employees %}
           <tr>
@@ -51,6 +61,22 @@
             <td>
               <input type="number" name="present_{{ emp.id }}" class="form-control form-control-sm present-days"
                      value="{{ total_days }}" min="0" max="31" step="0.5"/>
+            </td>
+            <td>
+              <input type="number" name="incentive_{{ emp.id }}" class="form-control form-control-sm"
+                     value="" min="0" step="0.01" placeholder="0"/>
+            </td>
+            <td>
+              <input type="number" name="overtime_{{ emp.id }}" class="form-control form-control-sm"
+                     value="" min="0" step="0.01" placeholder="0"/>
+            </td>
+            <td>
+              <input type="number" name="advance_{{ emp.id }}" class="form-control form-control-sm"
+                     value="" min="0" step="0.01" placeholder="auto"/>
+            </td>
+            <td>
+              <input type="number" name="tds_{{ emp.id }}" class="form-control form-control-sm"
+                     value="" min="0" step="0.01" placeholder="auto"/>
             </td>
           </tr>
           {% endfor %}

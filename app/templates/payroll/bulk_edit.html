@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Bulk Edit Payroll{% endblock %}
+{% block page_title %}Bulk Edit Payroll — {{ month|month_name }} {{ year }}{% endblock %}
+{% block content %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <input type="hidden" name="action" value="save"/>
+  <input type="hidden" name="month" value="{{ month }}"/>
+  <input type="hidden" name="year" value="{{ year }}"/>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span class="fw-semibold">Editing {{ records|length }} record(s) for {{ month|month_name }} {{ year }}</span>
+      <a href="{{ url_for('payroll.index', month=month, year=year) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back to Register
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm mb-0" style="font-size:.85rem">
+        <thead class="table-dark">
+          <tr>
+            <th>Emp</th>
+            <th>Name</th>
+            <th style="width:100px">Present Days</th>
+            <th style="width:120px">Advance (₹)</th>
+            <th style="width:120px">Other Ded. (₹)</th>
+            <th style="width:180px">Other Ded. Remarks</th>
+            <th style="width:130px">TDS Override (₹)</th>
+            <th class="text-end">Cur. Gross</th>
+            <th class="text-end">Cur. Net</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td><code>{{ r.employee.emp_code }}</code></td>
+            <td>{{ r.employee.full_name }}</td>
+            <td>
+              <input type="number" name="days_{{ r.id }}" class="form-control form-control-sm"
+                     value="{{ r.present_days }}" min="0" max="31" step="0.5"/>
+            </td>
+            <td>
+              <input type="number" name="adv_{{ r.id }}" class="form-control form-control-sm"
+                     value="{{ r.advance_deduction }}" min="0" step="0.01"/>
+            </td>
+            <td>
+              <input type="number" name="other_{{ r.id }}" class="form-control form-control-sm"
+                     value="{{ r.other_deductions }}" min="0" step="0.01"/>
+            </td>
+            <td>
+              <input type="text" name="other_rem_{{ r.id }}" class="form-control form-control-sm"
+                     value="{{ r.other_deductions_remarks or '' }}" placeholder="Reason"/>
+            </td>
+            <td>
+              <input type="number" name="tds_{{ r.id }}" class="form-control form-control-sm"
+                     value="{{ r.tds }}" min="0" step="0.01" placeholder="auto"/>
+            </td>
+            <td class="text-end text-muted">{{ r.gross_earned|inr }}</td>
+            <td class="text-end fw-bold text-success">{{ r.net_salary|inr }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="9" class="text-center text-muted py-4">No payroll records for this period.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer d-flex gap-2">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-arrow-repeat me-1"></i>Recalculate &amp; Save All
+      </button>
+      <a href="{{ url_for('payroll.index', month=month, year=year) }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

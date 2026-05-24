@@ -129,15 +129,15 @@
           </div>
           <div class="col-md-2">
             <label class="form-label">Employee (₹)</label>
-            <input type="number" name="lwf_employee" class="form-control" value="6" step="0.01"/>
+            <input type="number" name="lwf_employee" id="lwfEmployee" class="form-control" value="6" step="0.01"/>
           </div>
           <div class="col-md-2">
             <label class="form-label">Employer (₹)</label>
-            <input type="number" name="lwf_employer" class="form-control" value="12" step="0.01"/>
+            <input type="number" name="lwf_employer" id="lwfEmployer" class="form-control" value="12" step="0.01"/>
           </div>
           <div class="col-md-5">
             <label class="form-label">Deduction Months (comma-separated)</label>
-            <input type="text" name="lwf_months" class="form-control" value="6,12" placeholder="6,12"/>
+            <input type="text" name="lwf_months" id="lwfMonths" class="form-control" value="6,12" placeholder="6,12"/>
             <div class="form-text">6 = June, 12 = December</div>
           </div>
         </div>
@@ -152,18 +152,27 @@
 {% endblock %}
 {% block extra_js %}
 <script>
-// Auto-fill PT defaults when state changes
-const ptDefaults = {{ {
-  'Gujarat': [12000, 200], 'Maharashtra': [10000, 200], 'Karnataka': [15000, 200],
-  'Tamil Nadu': [21000, 208], 'West Bengal': [10000, 200], 'Andhra Pradesh': [15000, 200],
-  'Telangana': [15000, 200], 'Madhya Pradesh': [18750, 208], 'Odisha': [15000, 200],
-  'Kerala': [12000, 208]
+// [pt_threshold, pt_amount, lwf_employee, lwf_employer, lwf_months]
+const stateDefaults = {{ {
+  'Gujarat':           [12000, 200,  6,   12,  '6,12'],
+  'Maharashtra':       [10000, 200,  6,   12,  '6,12'],
+  'Karnataka':         [15000, 200,  20,  40,  '1,2,3,4,5,6,7,8,9,10,11,12'],
+  'Tamil Nadu':        [21000, 208,  10,  20,  '12'],
+  'West Bengal':       [10000, 200,  6,   12,  '6,12'],
+  'Andhra Pradesh':    [15000, 200,  30,  70,  '12'],
+  'Telangana':         [15000, 200,  30,  70,  '12'],
+  'Madhya Pradesh':    [18750, 208,  6,   12,  '6,12'],
+  'Odisha':            [15000, 200,  6,   12,  '6,12'],
+  'Kerala':            [12000, 208,  4,   8,   '1,2,3,4,5,6,7,8,9,10,11,12']
 } | tojson }};
 document.getElementById('stateSelect')?.addEventListener('change', function() {
-  const d = ptDefaults[this.value];
+  const d = stateDefaults[this.value];
   if (d) {
-    document.getElementById('ptThreshold').value = d[0];
-    document.getElementById('ptAmount').value = d[1];
+    document.getElementById('ptThreshold').value  = d[0];
+    document.getElementById('ptAmount').value     = d[1];
+    document.getElementById('lwfEmployee').value  = d[2];
+    document.getElementById('lwfEmployer').value  = d[3];
+    document.getElementById('lwfMonths').value    = d[4];
   }
 });
 </script>

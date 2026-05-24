@@ -40,7 +40,7 @@
       <thead>
         <tr>
           <th>Code</th><th>Name</th><th>Department</th><th>Designation</th>
-          <th>Gross CTC</th><th>PF</th><th>ESIC</th><th>DOJ</th><th>Status</th><th></th>
+          <th>Location</th><th>Gross CTC</th><th>PF</th><th>ESIC</th><th>DOJ</th><th>Status</th><th></th>
         </tr>
       </thead>
       <tbody>
@@ -54,6 +54,7 @@
           </td>
           <td><span class="badge-dept">{{ emp.department }}</span></td>
           <td class="text-muted small">{{ emp.designation }}</td>
+          <td class="text-muted small">{{ emp.location or '—' }}</td>
           <td>{{ emp.gross_salary|inr }}</td>
           <td>
             {% if emp.pf_applicable %}
@@ -82,7 +83,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="10" class="text-center text-muted py-4">No employees found.</td></tr>
+        <tr><td colspan="11" class="text-center text-muted py-4">No employees found.</td></tr>
         {% endfor %}
       </tbody>
     </table>
