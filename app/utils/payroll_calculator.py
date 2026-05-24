@@ -74,7 +74,7 @@ def calculate_payroll(employee, month: int, year: int,
     medical = _round2(_d(employee.medical_allowance) * ratio)
 
     # Extra earnings from attendance upload (performance bonus / incentives)
-    extra_total = _round2(sum(_d(v) for v in extra_earnings.values()))
+    extra_total = _round2(sum((_d(v) for v in extra_earnings.values()), _d(0)))
 
     # PF wage base = earned gross EXCLUDING petrol (also excluded: extra incentives)
     pf_wage_base = basic + hra + da + special + other_allow + conveyance + medical
