@@ -1,5 +1,5 @@
 from flask import (Blueprint, render_template, redirect, url_for, flash,
-                   request, send_file, current_app)
+                   request, send_file, current_app, session)
 from flask_login import login_required, current_user
 from app import db
 from app.models.employee import Employee
@@ -17,12 +17,14 @@ payroll_bp = Blueprint('payroll', __name__, url_prefix='/payroll')
 @login_required
 def index():
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query
         .join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code)
         .all()
     )
@@ -30,6 +32,7 @@ def index():
     pending_employees = (
         Employee.query
         .filter(
+            Employee.company_id == company_id,
             Employee.is_active == True,
             ~Employee.id.in_(employees_with_payroll)
         )
@@ -49,12 +52,13 @@ def index():
 def run_payroll():
     """Run payroll for all pending employees in a given month/year."""
     today = date.today()
+    company_id = session.get('company_id')
     if request.method == 'POST':
         month = int(request.form.get('month', today.month))
         year = int(request.form.get('year', today.year))
         total_days = int(request.form.get('total_working_days', 26))
 
-        employees = Employee.query.filter_by(is_active=True).all()
+        employees = Employee.query.filter_by(company_id=company_id, is_active=True).all()
         created = 0
         skipped = 0
         for emp in employees:
@@ -100,7 +104,7 @@ def run_payroll():
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     total_days = int(request.args.get('total_days', 26))
-    employees = Employee.query.filter_by(is_active=True).order_by(Employee.emp_code).all()
+    employees = Employee.query.filter_by(company_id=company_id, is_active=True).order_by(Employee.emp_code).all()
     months = [(i, calendar.month_name[i]) for i in range(1, 13)]
     years = list(range(2020, today.year + 2))
     return render_template('payroll/run.html',
@@ -180,12 +184,14 @@ def download_payslip(record_id):
 @login_required
 def salary_sheet():
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query
         .join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code)
         .all()
     )
@@ -202,12 +208,14 @@ def salary_sheet():
 def export_excel():
     from app.utils.excel_exporter import export_salary_sheet
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query
         .join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code)
         .all()
     )
@@ -225,11 +233,13 @@ def export_excel():
 def export_pf_challan():
     from app.utils.excel_exporter import export_pf_challan
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query.join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code).all()
     )
     wb_bytes = export_pf_challan(records, month, year, current_app.config)
@@ -246,11 +256,13 @@ def export_pf_challan():
 def export_esic_challan():
     from app.utils.excel_exporter import export_esic_challan
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query.join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code).all()
     )
     wb_bytes = export_esic_challan(records, month, year, current_app.config)
@@ -267,11 +279,13 @@ def export_esic_challan():
 def export_pt_challan():
     from app.utils.excel_exporter import export_pt_challan
     today = date.today()
+    company_id = session.get('company_id')
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     records = (
         SalaryRecord.query.join(Employee)
-        .filter(SalaryRecord.month == month, SalaryRecord.year == year)
+        .filter(Employee.company_id == company_id,
+                SalaryRecord.month == month, SalaryRecord.year == year)
         .order_by(Employee.emp_code).all()
     )
     wb_bytes = export_pt_challan(records, month, year, current_app.config)
