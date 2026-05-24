@@ -2,11 +2,13 @@
 {% block title %}Companies{% endblock %}
 {% block page_title %}Companies{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between mb-3">
-  <span class="text-muted small">{{ companies|length }} company(ies)</span>
-  <a href="{{ url_for('company.create_company') }}" class="btn btn-success btn-sm"><i class="bi bi-plus"></i> Add Company</a>
+<div class="d-flex justify-content-between align-items-center mb-3 gap-3">
+  <input type="text" id="coSearch" class="form-control form-control-sm" style="max-width:280px"
+         placeholder="Search companies..." oninput="filterCompanies(this.value)"/>
+  <span class="text-muted small" id="coCount">{{ companies|length }} company(ies)</span>
+  <a href="{{ url_for('company.create_company') }}" class="btn btn-success btn-sm ms-auto"><i class="bi bi-plus"></i> Add Company</a>
 </div>
-<div class="row g-3">
+<div class="row g-3" id="coGrid">
   {% for co in companies %}
   <div class="col-md-6">
     <div class="card">
@@ -32,4 +34,21 @@
   </div>
   {% endfor %}
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function filterCompanies(q) {
+  q = q.toLowerCase();
+  let shown = 0;
+  document.querySelectorAll('#coGrid .col-md-6').forEach(card => {
+    const name = card.querySelector('h6').textContent.toLowerCase();
+    const addr = card.querySelector('.text-muted').textContent.toLowerCase();
+    const match = !q || name.includes(q) || addr.includes(q);
+    card.style.display = match ? '' : 'none';
+    if (match) shown++;
+  });
+  document.getElementById('coCount').textContent = shown + ' company(ies)';
+}
+document.getElementById('coSearch').focus();
+</script>
 {% endblock %}
