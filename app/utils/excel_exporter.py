@@ -72,7 +72,7 @@ def export_salary_sheet(records, month: int, year: int, config) -> bytes:
     company = config.get('COMPANY_NAME', 'Company')
 
     # ── Row 1: Title ──────────────────────────────────────────────────────────
-    LAST_COL = 38
+    LAST_COL = 37
     ws.merge_cells(f'A1:{get_column_letter(LAST_COL)}1')
     t = ws['A1']
     t.value = f"{company.upper()} — SALARY SHEET — {calendar.month_name[month].upper()} {year}"
@@ -275,13 +275,13 @@ def export_pf_challan(records, month: int, year: int, config) -> bytes:
         ws['A2'].alignment = Alignment(horizontal='center')
 
     hdrs = [
-        ('Sr.', 5), ('UAN', 15), ('Employee Name', 24), ('Emp Code', 10),
-        ('Gross\nSalary (₹)', 13), ('EPF Wages\n(₹)', 13),
-        ('EPS Wages\n(₹)', 13), ('EDLI Wages\n(₹)', 13),
-        ('NCP\nDays', 8), ('Refund of\nAdvance (₹)', 13),
-        ('EE PF\n12% (₹)', 12), ('ER EPF\n3.67% (₹)', 13),
-        ('ER EPS\n8.33% (₹)', 13), ('EDLI\n0.5% (₹)', 11),
-        ('Admin\nCharges (₹)', 12), ('Total ER\nContrib. (₹)', 14),
+        ('Sr.', 5), ('UAN', 15), ('Member Name', 24), ('Member Code', 11),
+        ('Gross\nWages (₹)', 13), ('EPF\nWages (₹)', 13),
+        ('EPS\nWages (₹)', 13), ('EDLI\nWages (₹)', 13),
+        ('NCP\nDays', 8), ('Refund of\nAdvances (₹)', 13),
+        ('A/c 1\nEE Share\n12% (₹)', 12), ('A/c 1\nER EPF\n3.67% (₹)', 13),
+        ('A/c 10\nER EPS\n8.33% (₹)', 13), ('A/c 21\nEDLI\n0.5% (₹)', 11),
+        ('A/c 2+22\nAdmin\n0.5% (₹)', 12), ('Total ER\nContrib. (₹)', 14),
         ('Total\nChallan (₹)', 14),
     ]
     for ci, (h, w) in enumerate(hdrs, 1):

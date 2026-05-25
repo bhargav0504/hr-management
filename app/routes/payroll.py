@@ -58,6 +58,10 @@ def run_payroll():
         year = int(request.form.get('year', today.year))
         total_days = int(request.form.get('total_working_days', 26))
 
+        if year > today.year or (year == today.year and month >= today.month):
+            flash('Payroll can only be run for months that have already ended.', 'warning')
+            return redirect(url_for('payroll.run_payroll', month=month, year=year))
+
         employees = Employee.query.filter_by(company_id=company_id, is_active=True).all()
         created = 0
         skipped = 0
@@ -399,6 +403,9 @@ def import_attendance():
         month = int(request.form.get('month', today.month))
         year = int(request.form.get('year', today.year))
         total_days = int(request.form.get('total_working_days', 26))
+        if year > today.year or (year == today.year and month >= today.month):
+            flash('Payroll can only be run for months that have already ended.', 'warning')
+            return redirect(url_for('payroll.import_attendance'))
         if not f or not f.filename.endswith('.xlsx'):
             flash('Please upload a valid .xlsx file.', 'danger')
             return redirect(url_for('payroll.import_attendance'))

@@ -305,7 +305,10 @@ def import_employees():
             if not any(row):
                 continue
             data = dict(zip(headers, row))
-            emp_code = str(data.get('emp_code', '') or '').strip()
+            raw_code = data.get('emp_code', '') or ''
+            if isinstance(raw_code, float) and raw_code == int(raw_code):
+                raw_code = int(raw_code)
+            emp_code = str(int(raw_code)).zfill(3) if isinstance(raw_code, int) else str(raw_code).strip()
             if not emp_code:
                 continue
             if Employee.query.filter_by(company_id=cid, emp_code=emp_code).first():

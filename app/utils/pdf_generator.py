@@ -74,7 +74,7 @@ def generate_payslip_pdf(record, config) -> bytes:
         [lbl('Gender'), val(getattr(emp, 'gender', '—')), lbl('Location'), val(getattr(emp, 'location', '—'))],
         [lbl('Date of Joining'), val(emp.date_of_joining), lbl('PAN Number'), val(emp.pan_number)],
         [lbl('UAN (PF)'), val(emp.uan_number), lbl('ESIC IP No.'), val(emp.esic_ip_number)],
-        [lbl('Bank Account'), val(emp.bank_account), lbl('IFSC Code'), val(emp.ifsc_code)],
+        [lbl('Bank Account'), val(emp.bank_account), lbl('Bank Name'), val(emp.bank_name)],
         [lbl('Month Days'), val(record.total_working_days), lbl('Present Days'), val(record.present_days)],
         [lbl('LOP Days'), val(record.lop_days), lbl('TDS Regime'), val((emp.tds_regime or 'new').upper())],
     ]
@@ -165,62 +165,7 @@ def generate_payslip_pdf(record, config) -> bytes:
         ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
     ]))
     story.append(net_tbl)
-    story.append(Spacer(1, 4*mm))
-
-    # ── Employer contributions ────────────────────────────────────────────────
-    emp_data = [
-        [_p('EMPLOYER CONTRIBUTIONS (not deducted from salary)', 8, bold=True, color=ORANGE)],
-    ]
-    er_rows = [
-        [_p('EPF (3.67%)', 8), _p(_inr(record.pf_employer_epf), 8, align=TA_RIGHT),
-         _p('EPS (8.33%)', 8), _p(_inr(record.pf_employer_eps), 8, align=TA_RIGHT),
-         _p('EDLI (0.5%)', 8), _p(_inr(record.pf_employer_edli), 8, align=TA_RIGHT)],
-        [_p('ESIC (3.25%)', 8), _p(_inr(record.esic_employer), 8, align=TA_RIGHT),
-         _p('LWF (Employer)', 8), _p(_inr(record.lwf_employer), 8, align=TA_RIGHT),
-         _p('Gratuity (4.81%)', 8), _p(_inr(record.gratuity), 8, align=TA_RIGHT)],
-        [_p('Statutory Bonus', 8), _p(_inr(record.bonus), 8, align=TA_RIGHT),
-         _p('Total Employer Cost', 8, bold=True), _p(_inr(record.ctc), 8, bold=True, align=TA_RIGHT),
-         _p(''), _p('')],
-    ]
-    er_tbl_data = [['', '', '', '', '', '']] + er_rows
-    er_tbl = Table([[Paragraph(
-        'EMPLOYER CONTRIBUTIONS (not deducted from salary)',
-        ParagraphStyle('erl', fontSize=8, fontName='Helvetica-Bold', textColor=ORANGE)
-    )]], colWidths=[17*cm])
-    er_tbl.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_ORG),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    story.append(er_tbl)
-
-    er_detail = Table(er_rows, colWidths=[3.5*cm, 2.5*cm]*3)
-    er_detail.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_ORG),
-        ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#e5e7eb')),
-        ('TOPPADDING', (0, 0), (-1, -1), 3),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ('LEFTPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    story.append(er_detail)
-    story.append(Spacer(1, 3*mm))
-
-    # CTC summary
-    ctc_tbl = Table([[Paragraph(
-        f'MONTHLY CTC (COST TO COMPANY): {_inr(record.ctc)}',
-        ParagraphStyle('ctc', fontSize=10, fontName='Helvetica-Bold',
-                       textColor=ORANGE, alignment=TA_CENTER)
-    )]], colWidths=[17*cm])
-    ctc_tbl.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), LIGHT_ORG),
-        ('BOX', (0, 0), (-1, -1), 1, ORANGE),
-        ('TOPPADDING', (0, 0), (-1, -1), 5),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-    ]))
-    story.append(ctc_tbl)
-    story.append(Spacer(1, 4*mm))
+    story.append(Spacer(1, 6*mm))
 
     story.append(HRFlowable(width='100%', thickness=0.5, color=MUTED))
     story.append(Spacer(1, 2*mm))

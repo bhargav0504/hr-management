@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
 {% block title %}Salary Sheet — HR Manager{% endblock %}
 {% block page_title %}Salary Sheet{% endblock %}
+{% block extra_css %}
+<style>
+@media print {
+  @page { size: A3 landscape; margin: 8mm; }
+  .no-print, .sidebar, nav, .navbar { display: none !important; }
+  .main-content, body, .container-fluid { padding: 0 !important; margin: 0 !important; width: 100% !important; }
+  .card { border: none !important; box-shadow: none !important; }
+  .table { font-size: 7pt !important; }
+  .table th, .table td { padding: 2px 3px !important; }
+}
+</style>
+{% endblock %}
 {% block content %}
 <div class="card mb-3 no-print">
   <div class="card-body py-2">

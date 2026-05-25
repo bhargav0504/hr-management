@@ -63,15 +63,15 @@ def calculate_payroll(employee, month: int, year: int,
 
     ratio = _d(present_days) / _d(total_working_days) if total_working_days else _d(1)
 
-    # ── Earned earnings (prorated) ────────────────────────────────────────────
-    basic = _round2(_d(employee.basic_salary) * ratio)
-    hra = _round2(_d(employee.hra) * ratio)
-    da = _round2(_d(employee.da) * ratio)
-    special = _round2(_d(employee.special_allowance) * ratio)
-    other_allow = _round2(_d(employee.other_allowance) * ratio)
-    petrol = _round2(_d(employee.petrol_allowance) * ratio)
-    conveyance = _round2(_d(employee.conveyance) * ratio)
-    medical = _round2(_d(employee.medical_allowance) * ratio)
+    # ── Earned earnings (prorated, rounded UP to nearest rupee) ──────────────
+    basic = _roundup(_d(employee.basic_salary) * ratio)
+    hra = _roundup(_d(employee.hra) * ratio)
+    da = _roundup(_d(employee.da) * ratio)
+    special = _roundup(_d(employee.special_allowance) * ratio)
+    other_allow = _roundup(_d(employee.other_allowance) * ratio)
+    petrol = _roundup(_d(employee.petrol_allowance) * ratio)
+    conveyance = _roundup(_d(employee.conveyance) * ratio)
+    medical = _roundup(_d(employee.medical_allowance) * ratio)
 
     # Extra earnings from attendance upload (performance bonus / incentives)
     extra_total = _round2(sum((_d(v) for v in extra_earnings.values()), _d(0)))
