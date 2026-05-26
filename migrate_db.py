@@ -67,7 +67,8 @@ with app.app_context():
             else:
                 print(f'  ERROR: {e}')
 
-    # Create new tables (salary_components) — safe, skips if exists
+    # Create new tables (salary_components, payroll_locks) — safe, skips if exists
+    from app.models.payroll import PayrollLock  # noqa — ensure model is registered
     db.create_all()
-    print('New tables created (salary_components).')
+    print('New tables created (salary_components, payroll_locks).')
     print('\nMigration complete!')

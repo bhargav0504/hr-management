@@ -45,8 +45,8 @@
       <i class="bi bi-building"></i>
     {% endif %}
     <div>
-      {{ active_company.short_name or active_company.name if active_company else 'HR Manager' }}
-      <small>Indian Payroll — Gujarat</small>
+      {{ active_company.name if active_company else 'HR Manager' }}
+      <small>{{ active_company.short_name or 'Indian Payroll' if active_company else 'Gujarat Norms' }}</small>
     </div>
   </div>
 

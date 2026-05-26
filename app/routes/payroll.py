@@ -3,7 +3,7 @@ from flask import (Blueprint, render_template, redirect, url_for, flash,
 from flask_login import login_required, current_user
 from app import db
 from app.models.employee import Employee
-from app.models.payroll import SalaryRecord
+from app.models.payroll import SalaryRecord, PayrollLock
 from app.models.advance import Advance, AdvanceRepayment
 from app.utils.payroll_calculator import calculate_payroll
 from datetime import date, datetime
@@ -42,9 +42,12 @@ def index():
     months = [(i, calendar.month_name[i]) for i in range(1, 13)]
     years = list(range(2020, today.year + 2))
     totals = _compute_totals(records)
+    lock = PayrollLock.query.filter_by(company_id=company_id, month=month, year=year).first()
+    is_locked = lock.is_locked if lock else False
     return render_template('payroll/index.html',
                            records=records, pending_employees=pending_employees,
-                           month=month, year=year, months=months, years=years, totals=totals)
+                           month=month, year=year, months=months, years=years,
+                           totals=totals, is_locked=is_locked)
 
 
 @payroll_bp.route('/run', methods=['GET', 'POST'])
@@ -108,7 +111,18 @@ def run_payroll():
             created += 1
 
         db.session.commit()
-        flash(f'Payroll processed: {created} records created, {skipped} already existed.', 'success')
+
+        # Auto-lock the month after processing
+        lock = PayrollLock.query.filter_by(company_id=company_id, month=month, year=year).first()
+        if not lock:
+            lock = PayrollLock(company_id=company_id, month=month, year=year)
+            db.session.add(lock)
+        lock.is_locked = True
+        lock.locked_by = current_user.id
+        lock.locked_at = datetime.utcnow()
+        db.session.commit()
+
+        flash(f'Payroll processed: {created} records created, {skipped} already existed. Month is now locked.', 'success')
         return redirect(url_for('payroll.salary_sheet', month=month, year=year))
 
     # GET — show form
@@ -130,10 +144,25 @@ def record_detail(record_id):
     return render_template('payroll/record_detail.html', record=record)
 
 
+def _check_lock(record):
+    """Return flash message and redirect if month is locked, else None."""
+    company_id = session.get('company_id')
+    lock = PayrollLock.query.filter_by(
+        company_id=company_id, month=record.month, year=record.year, is_locked=True
+    ).first()
+    if lock:
+        flash(f'{record.period_label} is locked. Unlock it first to make changes.', 'warning')
+        return redirect(url_for('payroll.index', month=record.month, year=record.year))
+    return None
+
+
 @payroll_bp.route('/record/<int:record_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_record(record_id):
     record = SalaryRecord.query.get_or_404(record_id)
+    blocked = _check_lock(record)
+    if blocked:
+        return blocked
     if request.method == 'POST':
         # Manual override fields
         for field in ['present_days', 'tds', 'advance_deduction', 'other_deductions']:
@@ -180,6 +209,11 @@ def bulk_edit():
         .order_by(Employee.emp_code).all()
     )
 
+    lock = PayrollLock.query.filter_by(company_id=company_id, month=month, year=year, is_locked=True).first()
+    if lock and request.method == 'POST':
+        flash(f'Payroll for this month is locked. Unlock it first.', 'warning')
+        return redirect(url_for('payroll.index', month=month, year=year))
+
     if request.method == 'POST' and request.form.get('action') == 'save':
         updated = 0
         for record in records:
@@ -221,6 +255,48 @@ def bulk_edit():
                            month=month, year=year, months=months, years=years)
 
 
+@payroll_bp.route('/lock', methods=['POST'])
+@login_required
+def lock_month():
+    if not current_user.is_admin():
+        flash('Only admins can lock payroll months.', 'danger')
+        return redirect(request.referrer or url_for('payroll.index'))
+    company_id = session.get('company_id')
+    month = int(request.form.get('month'))
+    year = int(request.form.get('year'))
+    lock = PayrollLock.query.filter_by(company_id=company_id, month=month, year=year).first()
+    if not lock:
+        lock = PayrollLock(company_id=company_id, month=month, year=year)
+        db.session.add(lock)
+    lock.is_locked = True
+    lock.locked_by = current_user.id
+    lock.locked_at = datetime.utcnow()
+    db.session.commit()
+    flash(f'Payroll for {calendar.month_name[month]} {year} locked.', 'success')
+    return redirect(url_for('payroll.index', month=month, year=year))
+
+
+@payroll_bp.route('/unlock', methods=['POST'])
+@login_required
+def unlock_month():
+    if not current_user.is_admin():
+        flash('Only admins can unlock payroll months.', 'danger')
+        return redirect(request.referrer or url_for('payroll.index'))
+    company_id = session.get('company_id')
+    month = int(request.form.get('month'))
+    year = int(request.form.get('year'))
+    password = request.form.get('password', '')
+    if not current_user.check_password(password):
+        flash('Incorrect password. Payroll remains locked.', 'danger')
+        return redirect(url_for('payroll.index', month=month, year=year))
+    lock = PayrollLock.query.filter_by(company_id=company_id, month=month, year=year).first()
+    if lock:
+        lock.is_locked = False
+        db.session.commit()
+    flash(f'Payroll for {calendar.month_name[month]} {year} unlocked.', 'success')
+    return redirect(url_for('payroll.index', month=month, year=year))
+
+
 @payroll_bp.route('/record/<int:record_id>/delete', methods=['POST'])
 @login_required
 def delete_record(record_id):
@@ -228,6 +304,9 @@ def delete_record(record_id):
         flash('Access denied.', 'danger')
         return redirect(url_for('payroll.index'))
     record = SalaryRecord.query.get_or_404(record_id)
+    blocked = _check_lock(record)
+    if blocked:
+        return blocked
     db.session.delete(record)
     db.session.commit()
     flash('Payroll record deleted.', 'success')

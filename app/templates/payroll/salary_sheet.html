@@ -59,7 +59,7 @@
         </tr>
         <tr>
           <th>Total</th><th>Present</th>
-          <th>Basic</th><th>HRA</th><th>DA</th><th>Spl</th><th>Other</th><th>Conv</th><th>Gross</th>
+          <th>Basic</th><th>HRA</th><th>DA</th><th>Spl</th><th>Other</th><th>Conv</th><th>Extra</th><th>Gross</th>
           <th>PF</th><th>ESIC</th><th>LWF</th><th>TDS</th><th>Adv</th>
         </tr>
       </thead>
@@ -78,6 +78,7 @@
           <td class="text-end">{{ r.special_allowance|inr }}</td>
           <td class="text-end">{{ r.other_allowance|inr }}</td>
           <td class="text-end">{{ r.conveyance|inr }}</td>
+          <td class="text-end text-primary">{{ r.extra_earned|inr }}</td>
           <td class="text-end fw-medium">{{ r.gross_earned|inr }}</td>
           <td class="text-end">{{ r.pf_employee|inr }}</td>
           <td class="text-end">{{ r.esic_employee|inr }}</td>
@@ -92,7 +93,7 @@
         <tr>
           <td colspan="6" class="text-center">TOTALS</td>
           <td class="text-end">{{ totals.basic|inr }}</td>
-          <td></td><td></td><td></td><td></td><td></td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
           <td class="text-end">{{ totals.gross_earned|inr }}</td>
           <td class="text-end">{{ totals.pf_employee|inr }}</td>
           <td class="text-end">{{ totals.esic_employee|inr }}</td>

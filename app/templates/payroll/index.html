@@ -16,10 +16,25 @@
         </select>
       </div>
       <div class="col-auto"><button class="btn btn-primary btn-sm">View</button></div>
-      <div class="col-auto ms-auto d-flex gap-1 flex-wrap">
+      <div class="col-auto ms-auto d-flex gap-1 flex-wrap align-items-center">
+        {% if is_locked %}
+        <span class="badge bg-danger me-1"><i class="bi bi-lock-fill"></i> Locked</span>
+        {% if current_user.is_admin() %}
+        <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#unlockModal">
+          <i class="bi bi-unlock"></i> Unlock
+        </button>
+        {% endif %}
+        {% else %}
+        {% if records %}<form method="post" action="{{ url_for('payroll.lock_month') }}" class="d-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <input type="hidden" name="month" value="{{ month }}"/>
+          <input type="hidden" name="year" value="{{ year }}"/>
+          <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-lock"></i> Lock</button>
+        </form>{% endif %}
         <a href="{{ url_for('payroll.run_payroll', month=month, year=year) }}" class="btn btn-success btn-sm">
           <i class="bi bi-play-circle"></i> Run Payroll
         </a>
+        {% endif %}
         <a href="{{ url_for('payroll.export_excel', month=month, year=year) }}" class="btn btn-outline-success btn-sm">
           <i class="bi bi-file-earmark-excel"></i> Salary Sheet
         </a>
@@ -35,6 +50,32 @@
     </form>
   </div>
 </div>
+
+{% if current_user.is_admin() %}
+<div class="modal fade" id="unlockModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form method="post" action="{{ url_for('payroll.unlock_month') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <input type="hidden" name="month" value="{{ month }}"/>
+        <input type="hidden" name="year" value="{{ year }}"/>
+        <div class="modal-header">
+          <h6 class="modal-title"><i class="bi bi-unlock me-1"></i>Unlock {{ month|month_name }} {{ year }}</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted">Enter your admin password to unlock this payroll month for editing.</p>
+          <input type="password" name="password" class="form-control" placeholder="Your password" required autofocus/>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-warning btn-sm"><i class="bi bi-unlock"></i> Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {% if pending_employees %}
 <div class="alert alert-warning d-flex align-items-center gap-2">

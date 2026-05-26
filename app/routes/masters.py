@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
-from flask_login import login_required
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify
+from flask_login import login_required, current_user
 from app import db
 from app.models.masters import Department, Designation, Category, Location, SalaryComponent
 from app.models.leave import LeaveType
@@ -40,6 +40,28 @@ PT_STATE_DEFAULTS = {
 
 def _get_company_id():
     return session.get('company_id')
+
+
+@masters_bp.route('/quick-add', methods=['POST'])
+@login_required
+def quick_add():
+    """AJAX endpoint: add a dept/designation/category and return the new name."""
+    cid = _get_company_id()
+    model_name = request.json.get('model', '')
+    name = (request.json.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    model_map = {'department': Department, 'designation': Designation, 'category': Category}
+    model = model_map.get(model_name)
+    if not model:
+        return jsonify({'error': 'Invalid type'}), 400
+    existing = model.query.filter_by(company_id=cid, name=name).first()
+    if existing:
+        return jsonify({'name': existing.name, 'exists': True})
+    item = model(company_id=cid, name=name)
+    db.session.add(item)
+    db.session.commit()
+    return jsonify({'name': name, 'created': True})
 
 
 @masters_bp.route('/')

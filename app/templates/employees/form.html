@@ -64,19 +64,27 @@
             {{ form.leaving_remarks(class="form-control", rows=1) }}
           </div>
           <div class="col-md-3">
-            <label class="form-label">Department *</label>
-            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else "")) }}
+            <label class="form-label d-flex justify-content-between">Department *
+              <a href="#" class="text-primary small" onclick="openQuickAdd('department','Department',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
+            </label>
+            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else ""), id="sel_department") }}
           </div>
           <div class="col-md-3">
-            <label class="form-label">Designation *</label>
-            {{ form.designation(class="form-select" + (" is-invalid" if form.designation.errors else "")) }}
+            <label class="form-label d-flex justify-content-between">Designation *
+              <a href="#" class="text-primary small" onclick="openQuickAdd('designation','Designation',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
+            </label>
+            {{ form.designation(class="form-select" + (" is-invalid" if form.designation.errors else ""), id="sel_designation") }}
           </div>
           <div class="col-md-3">
-            <label class="form-label">Category</label>
-            {{ form.category(class="form-select") }}
+            <label class="form-label d-flex justify-content-between">Category
+              <a href="#" class="text-primary small" onclick="openQuickAdd('category','Category',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
+            </label>
+            {{ form.category(class="form-select", id="sel_category") }}
           </div>
           <div class="col-md-3">
-            <label class="form-label">Location *</label>
+            <label class="form-label d-flex justify-content-between">Location *
+              <a href="{{ url_for('masters.list_locations') }}" target="_blank" class="text-primary small"><i class="bi bi-plus-circle"></i> Add New</a>
+            </label>
             {{ form.location(class="form-select" + (" is-invalid" if form.location.errors else "")) }}
             {% for e in form.location.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
           </div>
@@ -230,7 +238,13 @@
 
     <div class="col-12">
       {{ form.submit(class="btn btn-primary px-4") }}
+      {% if emp %}
+      <a href="{{ url_for('employees.detail', emp_id=emp.id) }}" class="btn btn-outline-secondary ms-2">
+        <i class="bi bi-arrow-left me-1"></i>Back to Employee
+      </a>
+      {% else %}
       <a href="{{ url_for('employees.list_employees') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+      {% endif %}
     </div>
   </div>
 </form>
@@ -245,5 +259,54 @@
   }
   ids.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updateGross); });
   updateGross();
+
+// Quick-add master modal
+let _qaTarget = null;
+function openQuickAdd(model, label, triggerEl) {
+  _qaTarget = {model, selectId: 'sel_' + model};
+  document.getElementById('qaLabel').textContent = 'Add New ' + label;
+  document.getElementById('qaInput').value = '';
+  document.getElementById('qaError').textContent = '';
+  new bootstrap.Modal(document.getElementById('quickAddModal')).show();
+}
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('qaSaveBtn')?.addEventListener('click', async function() {
+    const name = document.getElementById('qaInput').value.trim();
+    if (!name) { document.getElementById('qaError').textContent = 'Name is required.'; return; }
+    const res = await fetch('{{ url_for("masters.quick_add") }}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+      body: JSON.stringify({model: _qaTarget.model, name})
+    });
+    const data = await res.json();
+    if (data.error) { document.getElementById('qaError').textContent = data.error; return; }
+    const sel = document.getElementById(_qaTarget.selectId);
+    if (sel) {
+      const opt = new Option(name, name, true, true);
+      sel.add(opt);
+    }
+    bootstrap.Modal.getInstance(document.getElementById('quickAddModal')).hide();
+  });
+});
 </script>
+
+<!-- Quick-Add Modal -->
+<div class="modal fade" id="quickAddModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="qaLabel">Add New</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="qaInput" class="form-control" placeholder="Enter name..."/>
+        <div class="text-danger small mt-1" id="qaError"></div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary btn-sm" id="qaSaveBtn">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -196,6 +196,24 @@ def edit_employee(emp_id):
     return render_template('employees/form.html', form=form, title='Edit Employee', emp=emp)
 
 
+@employees_bp.route('/<int:emp_id>/delete', methods=['POST'])
+@login_required
+def delete_employee(emp_id):
+    if not current_user.is_admin():
+        flash('Only admins can delete employees.', 'danger')
+        return redirect(url_for('employees.detail', emp_id=emp_id))
+    emp = Employee.query.get_or_404(emp_id)
+    from app.models.payroll import SalaryRecord
+    if SalaryRecord.query.filter_by(employee_id=emp_id).count() > 0:
+        flash('Cannot delete — employee has payroll records. Deactivate instead.', 'warning')
+        return redirect(url_for('employees.detail', emp_id=emp_id))
+    name = emp.full_name
+    db.session.delete(emp)
+    db.session.commit()
+    flash(f'{name} permanently deleted.', 'success')
+    return redirect(url_for('employees.list_employees'))
+
+
 @employees_bp.route('/<int:emp_id>/toggle', methods=['POST'])
 @login_required
 def toggle_employee(emp_id):

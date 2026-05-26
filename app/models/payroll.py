@@ -74,5 +74,31 @@ class SalaryRecord(db.Model):
         from calendar import month_name
         return f'{month_name[self.month]} {self.year}'
 
+    @property
+    def extra_earned(self):
+        """Incentive / overtime / bonus — anything beyond the standard salary components."""
+        return max(0.0,
+            float(self.gross_earned or 0)
+            - float(self.basic or 0) - float(self.hra or 0)
+            - float(self.da or 0) - float(self.special_allowance or 0)
+            - float(self.other_allowance or 0) - float(self.conveyance or 0)
+            - float(self.medical_allowance or 0) - float(self.petrol_allowance or 0))
+
     def __repr__(self):
         return f'<SalaryRecord emp={self.employee_id} {self.month}/{self.year}>'
+
+
+class PayrollLock(db.Model):
+    __tablename__ = 'payroll_locks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    is_locked = db.Column(db.Boolean, default=True, nullable=False)
+    locked_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    locked_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('company_id', 'month', 'year', name='uq_payroll_lock'),
+    )
