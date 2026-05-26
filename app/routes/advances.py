@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_required, current_user
 from app import db
 from app.models.employee import Employee
@@ -9,6 +9,10 @@ from wtforms.validators import DataRequired, Optional, NumberRange
 from datetime import date
 
 advances_bp = Blueprint('advances', __name__, url_prefix='/advances')
+
+
+def _company_id():
+    return session.get('company_id')
 
 
 class AdvanceForm(FlaskForm):
@@ -24,13 +28,14 @@ class AdvanceForm(FlaskForm):
 @advances_bp.route('/')
 @login_required
 def list_advances():
+    cid = _company_id()
     status = request.args.get('status', 'active')
     q = request.args.get('q', '').strip()
-    query = Advance.query
+    query = Advance.query.join(Employee).filter(Employee.company_id == cid)
     if status in ('active', 'closed'):
-        query = query.filter_by(status=status)
+        query = query.filter(Advance.status == status)
     if q:
-        query = query.join(Employee).filter(
+        query = query.filter(
             db.or_(
                 Employee.first_name.ilike(f'%{q}%'),
                 Employee.last_name.ilike(f'%{q}%'),
@@ -44,12 +49,18 @@ def list_advances():
 @advances_bp.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_advance():
+    cid = _company_id()
     form = AdvanceForm()
     form.employee_id.choices = [
-        (e.id, f'{e.emp_code} - {e.full_name}')
-        for e in Employee.query.filter_by(is_active=True).order_by(Employee.emp_code).all()
+        (e.id, f'{e.emp_code} — {e.full_name} ({e.location or "—"})')
+        for e in Employee.query.filter_by(company_id=cid, is_active=True).order_by(Employee.emp_code).all()
     ]
     if form.validate_on_submit():
+        # Verify employee belongs to this company
+        emp = Employee.query.filter_by(id=form.employee_id.data, company_id=cid).first()
+        if not emp:
+            flash('Invalid employee selection.', 'danger')
+            return render_template('advances/form.html', form=form, title='Grant Advance')
         advance = Advance(
             employee_id=form.employee_id.data,
             amount=form.amount.data,
@@ -70,6 +81,10 @@ def create_advance():
 @login_required
 def detail(adv_id):
     advance = Advance.query.get_or_404(adv_id)
+    # Ensure advance belongs to current company
+    if advance.employee.company_id != _company_id():
+        flash('Access denied.', 'danger')
+        return redirect(url_for('advances.list_advances'))
     repayments = advance.repayments.order_by(
         AdvanceRepayment.year.desc(), AdvanceRepayment.month.desc()
     ).all()
@@ -83,6 +98,9 @@ def close_advance(adv_id):
         flash('Access denied.', 'danger')
         return redirect(url_for('advances.list_advances'))
     advance = Advance.query.get_or_404(adv_id)
+    if advance.employee.company_id != _company_id():
+        flash('Access denied.', 'danger')
+        return redirect(url_for('advances.list_advances'))
     advance.status = 'closed'
     db.session.commit()
     flash('Advance closed.', 'success')
