@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Arrears{% endblock %}
+{% block page_title %}Arrears Register{% endblock %}
+{% block content %}
+<div class="card mb-3 no-print">
+  <div class="card-body py-2">
+    <form class="row g-2 align-items-center" method="get">
+      <div class="col-md-2">
+        <select name="status" class="form-select form-select-sm">
+          <option value="pending" {{ 'selected' if status=='pending' }}>Pending</option>
+          <option value="paid" {{ 'selected' if status=='paid' }}>Paid</option>
+          <option value="cancelled" {{ 'selected' if status=='cancelled' }}>Cancelled</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="text" name="q" class="form-control form-control-sm" value="{{ q }}" placeholder="Search employee..."/>
+      </div>
+      <div class="col-auto"><button class="btn btn-primary btn-sm">Filter</button></div>
+      <div class="col-auto ms-auto">
+        <a href="{{ url_for('arrears.add_arrear') }}" class="btn btn-success btn-sm">
+          <i class="bi bi-plus-lg me-1"></i>Add Arrear
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover table-sm mb-0 small">
+      <thead>
+        <tr>
+          <th>Emp Code</th><th>Name</th><th>Type</th><th>Head</th><th>Description</th>
+          <th>Period</th><th class="text-end">Amount</th><th>Taxable</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set total = namespace(amt=0) %}
+        {% for r in records %}
+        {% if r.arrear_type == 'pay' %}{% set total.amt = total.amt + r.amount|float %}{% endif %}
+        <tr>
+          <td><code>{{ r.employee.emp_code }}</code></td>
+          <td>{{ r.employee.full_name }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if r.arrear_type=='pay' else 'warning text-dark' }}">
+              {{ 'PAY' if r.arrear_type=='pay' else 'COLLECT' }}
+            </span>
+          </td>
+          <td>{{ r.arrear_head|replace('_',' ')|title }}</td>
+          <td class="text-muted">{{ r.description or '—' }}</td>
+          <td>{{ r.from_month|month_name|truncate(3,True,'') }} {{ r.from_year }}
+              {% if r.to_month != r.from_month or r.to_year != r.from_year %}
+              → {{ r.to_month|month_name|truncate(3,True,'') }} {{ r.to_year }}{% endif %}
+          </td>
+          <td class="text-end fw-semibold">{{ r.amount|inr }}</td>
+          <td>{{ '✓' if r.is_taxable else '—' }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if r.status=='paid' else ('secondary' if r.status=='cancelled' else 'warning text-dark') }}">
+              {{ r.status|upper }}
+            </span>
+          </td>
+          <td class="text-end">
+            {% if r.status == 'pending' %}
+            <form method="post" action="{{ url_for('arrears.mark_paid', arr_id=r.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn btn-xs btn-outline-success" style="font-size:.75rem;padding:1px 6px">Mark Paid</button>
+            </form>
+            {% if current_user.is_admin() %}
+            <form method="post" action="{{ url_for('arrears.cancel_arrear', arr_id=r.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button class="btn btn-xs btn-outline-danger" style="font-size:.75rem;padding:1px 6px">Cancel</button>
+            </form>
+            {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="text-center text-muted py-4">No arrear records found.</td></tr>
+        {% endfor %}
+      </tbody>
+      {% if records %}
+      <tfoot class="table-primary fw-bold">
+        <tr><td colspan="6">TOTAL PAYABLE</td>
+          <td class="text-end">{{ total.amt|inr }}</td><td colspan="3"></td></tr>
+      </tfoot>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Add Arrear{% endblock %}
+{% block page_title %}Add Arrear Record{% endblock %}
+{% block content %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card mb-3">
+        <div class="card-header"><i class="bi bi-clock-history me-2"></i>Arrear Details</div>
+        <div class="card-body row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Type</label>
+            <select name="arrear_type" class="form-select">
+              <option value="pay">Pay (to Employee)</option>
+              <option value="collect">Collect (from Employee)</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Arrear Head</label>
+            <select name="arrear_head" class="form-select">
+              {% for val, label in arrear_heads %}
+              <option value="{{ val }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Amount (₹) *</label>
+            <input type="number" name="amount" class="form-control" step="0.01" min="0" required placeholder="0.00"/>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Description</label>
+            <input type="text" name="description" class="form-control" placeholder="e.g. Salary revision effective April 2024"/>
+          </div>
+          <div class="col-md-3">
+            <div class="form-check form-switch mt-4">
+              <input class="form-check-input" type="checkbox" name="is_taxable" checked/>
+              <label class="form-check-label">Taxable</label>
+            </div>
+          </div>
+          <div class="col-12"><hr class="my-1"/><small class="text-muted fw-semibold">Arrear Period</small></div>
+          <div class="col-md-3">
+            <label class="form-label">From Month</label>
+            <select name="from_month" class="form-select">
+              {% for m, mn in months %}<option value="{{ m }}" {{ 'selected' if m==today.month }}>{{ mn }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">From Year</label>
+            <select name="from_year" class="form-select">
+              {% for y in years %}<option value="{{ y }}" {{ 'selected' if y==today.year }}>{{ y }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">To Month</label>
+            <select name="to_month" class="form-select">
+              {% for m, mn in months %}<option value="{{ m }}" {{ 'selected' if m==today.month }}>{{ mn }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">To Year</label>
+            <select name="to_year" class="form-select">
+              {% for y in years %}<option value="{{ y }}" {{ 'selected' if y==today.year }}>{{ y }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Remarks</label>
+            <input type="text" name="remarks" class="form-control" placeholder="Optional notes"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Select Employees</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary"
+                  onclick="document.querySelectorAll('.empChk').forEach(c=>c.checked=!c.checked)">Toggle All</button>
+        </div>
+        <div style="max-height:420px;overflow-y:auto">
+          <table class="table table-sm mb-0 small">
+            <tbody>
+              {% for emp in employees %}
+              <tr>
+                <td><input type="checkbox" name="employee_ids" value="{{ emp.id }}" class="empChk"/></td>
+                <td><code>{{ emp.emp_code }}</code></td>
+                <td>{{ emp.full_name }}</td>
+                <td class="text-muted">{{ emp.department[:10] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i>Save Arrear(s)</button>
+      <a href="{{ url_for('arrears.list_arrears') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

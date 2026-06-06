@@ -53,6 +53,38 @@
         </div>
       </div>
     </div>
+    <!-- Salary Structure Template -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-cash-stack me-2"></i>Salary Structure Template
+          <span class="text-muted fw-normal small ms-2">— used by "Auto-fill from Company Structure" when adding employees</span>
+        </div>
+        <div class="card-body row g-3">
+          <div class="col-md-2">{{ form.ss_basic_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_basic_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-2">{{ form.ss_hra_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_hra_pct(class='form-control') }}<span class="input-group-text">% of Basic</span></div></div>
+          <div class="col-md-2">{{ form.ss_da_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_da_pct(class='form-control') }}<span class="input-group-text">% of Basic</span></div></div>
+          <div class="col-md-2">{{ form.ss_special_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_special_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-2">{{ form.ss_conveyance_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_conveyance_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-2">{{ form.ss_medical_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_medical_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-2">{{ form.ss_other_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_other_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-2">{{ form.ss_petrol_pct.label(class='form-label') }}
+            <div class="input-group input-group-sm">{{ form.ss_petrol_pct(class='form-control') }}<span class="input-group-text">% of Gross</span></div></div>
+          <div class="col-md-8">
+            <div class="alert alert-info py-2 px-3 mb-0 small">
+              Example (Basic 50%, HRA 40% of Basic): Gross ₹20,000 → Basic ₹10,000 → HRA ₹4,000 → remaining is special/other.
+              Employees can override these values individually.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="col-12">
       {{ form.submit(class='btn btn-primary px-4') }}
       <a href="{{ url_for('company.list_companies') }}" class="btn btn-outline-secondary ms-2">Cancel</a>

@@ -1,268 +1,384 @@
 {% extends 'base.html' %}
 {% block title %}{{ title }} — HR Manager{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
+{% block extra_css %}
+<style>
+  .tab-pane { padding-top: 1.25rem; }
+  .nav-tabs .nav-link { font-size:.84rem; padding:.5rem 1rem; }
+  .nav-tabs .nav-link.has-error { color:#dc3545 !important; border-bottom-color:#dc3545; }
+  .field-section { font-size:.72rem; text-transform:uppercase; letter-spacing:.8px; color:#6b7280; font-weight:600; margin:.75rem 0 .4rem; border-bottom:1px solid #f0f0f0; padding-bottom:.25rem; }
+</style>
+{% endblock %}
 {% block content %}
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" id="empForm">
   {{ form.hidden_tag() }}
-  <div class="row g-3">
 
-    <!-- Basic Info -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header"><i class="bi bi-person-badge me-2"></i>Basic Information</div>
-        <div class="card-body row g-3">
-          <div class="col-md-2">
-            <label class="form-label">Photo</label>
-            {% if emp and emp.photo_filename %}
-              <div class="mb-1"><img src="{{ url_for('static', filename='uploads/photos/' ~ emp.photo_filename) }}" style="height:60px;width:60px;object-fit:cover;border-radius:6px"/></div>
-            {% endif %}
-            <input type="file" name="photo" class="form-control form-control-sm" accept="image/*"/>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Employee Code *</label>
-            {{ form.emp_code(class="form-control" + (" is-invalid" if form.emp_code.errors else "")) }}
-            {% for e in form.emp_code.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">First Name *</label>
-            {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Last Name *</label>
-            {{ form.last_name(class="form-control") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Gender</label>
-            {{ form.gender(class="form-select") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Father / Husband Name</label>
-            {{ form.father_husband_name(class="form-control") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Marital Status</label>
-            {{ form.marital_status(class="form-select") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Date of Birth</label>
-            {{ form.date_of_birth(class="form-control") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Date of Joining *</label>
-            {{ form.date_of_joining(class="form-control" + (" is-invalid" if form.date_of_joining.errors else "")) }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Date of Leaving</label>
-            {{ form.date_of_leaving(class="form-control") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Reason for Leaving</label>
-            {{ form.reason_for_leaving(class="form-select") }}
-          </div>
-          <div class="col-md-9">
-            <label class="form-label">Leaving Remarks</label>
-            {{ form.leaving_remarks(class="form-control", rows=1) }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label d-flex justify-content-between">Department *
-              <a href="#" class="text-primary small" onclick="openQuickAdd('department','Department',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
-            </label>
-            {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else ""), id="sel_department") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label d-flex justify-content-between">Designation *
-              <a href="#" class="text-primary small" onclick="openQuickAdd('designation','Designation',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
-            </label>
-            {{ form.designation(class="form-select" + (" is-invalid" if form.designation.errors else ""), id="sel_designation") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label d-flex justify-content-between">Category
-              <a href="#" class="text-primary small" onclick="openQuickAdd('category','Category',this);return false"><i class="bi bi-plus-circle"></i> Add New</a>
-            </label>
-            {{ form.category(class="form-select", id="sel_category") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label d-flex justify-content-between">Location *
-              <a href="{{ url_for('masters.list_locations') }}" target="_blank" class="text-primary small"><i class="bi bi-plus-circle"></i> Add New</a>
-            </label>
-            {{ form.location(class="form-select" + (" is-invalid" if form.location.errors else "")) }}
-            {% for e in form.location.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Employment Type</label>
-            {{ form.employment_type(class="form-select") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Mobile</label>
-            {{ form.mobile(class="form-control") }}
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Email</label>
-            {{ form.email(class="form-control") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">City</label>
-            {{ form.city(class="form-control") }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">State</label>
-            {{ form.state(class="form-control") }}
-          </div>
-          <div class="col-md-12">
-            <label class="form-label">Address</label>
-            {{ form.address(class="form-control", rows=2) }}
-          </div>
+  <!-- Tab Navigation -->
+  <ul class="nav nav-tabs" id="empTabs">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabPersonal" type="button">
+      <i class="bi bi-person me-1"></i>Personal</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabEmployment" type="button">
+      <i class="bi bi-briefcase me-1"></i>Employment</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabContact" type="button">
+      <i class="bi bi-telephone me-1"></i>Contact</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabStatutory" type="button">
+      <i class="bi bi-card-list me-1"></i>Statutory IDs</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBank" type="button">
+      <i class="bi bi-bank me-1"></i>Bank</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSalary" type="button">
+      <i class="bi bi-cash-stack me-1"></i>Salary</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSettings" type="button">
+      <i class="bi bi-shield-check me-1"></i>Settings</button></li>
+  </ul>
+
+  <div class="tab-content card border-top-0 rounded-0 rounded-bottom p-3 bg-white shadow-sm mb-3" id="empTabContent">
+
+    <!-- ── Tab 1: Personal ──────────────────────────────────────────── -->
+    <div class="tab-pane fade show active" id="tabPersonal">
+      <div class="row g-3">
+        <div class="col-md-2 text-center">
+          <label class="form-label d-block">Photo</label>
+          {% if emp and emp.photo_filename %}
+            <img src="{{ url_for('static', filename='uploads/photos/' ~ emp.photo_filename) }}"
+                 style="height:80px;width:80px;object-fit:cover;border-radius:50%;border:2px solid #e5e7eb;margin-bottom:.5rem;display:block;margin-left:auto;margin-right:auto"/>
+          {% else %}
+            <div style="height:80px;width:80px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;margin:0 auto .5rem">
+              <i class="bi bi-person fs-2 text-muted"></i>
+            </div>
+          {% endif %}
+          <input type="file" name="photo" class="form-control form-control-sm" accept="image/*"/>
         </div>
-      </div>
-    </div>
-
-    <!-- Statutory IDs -->
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-header"><i class="bi bi-card-list me-2"></i>Statutory IDs</div>
-        <div class="card-body row g-3">
-          <div class="col-6">
-            <label class="form-label">PAN Number</label>
-            {{ form.pan_number(class="form-control text-uppercase", maxlength=10) }}
-          </div>
-          <div class="col-6">
-            <label class="form-label">Aadhaar Number</label>
-            {{ form.aadhaar_number(class="form-control", maxlength=12) }}
-          </div>
-          <div class="col-6">
-            <label class="form-label">UAN (PF)</label>
-            {{ form.uan_number(class="form-control", maxlength=12) }}
-          </div>
-          <div class="col-6">
-            <label class="form-label">ESIC IP Number</label>
-            {{ form.esic_ip_number(class="form-control") }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bank Details -->
-    <div class="col-md-6">
-      <div class="card h-100">
-        <div class="card-header"><i class="bi bi-bank me-2"></i>Bank Details</div>
-        <div class="card-body row g-3">
-          <div class="col-12">
-            <label class="form-label">Bank Name</label>
-            {{ form.bank_name(class="form-control") }}
-          </div>
-          <div class="col-7">
-            <label class="form-label">Account Number</label>
-            {{ form.bank_account(class="form-control") }}
-          </div>
-          <div class="col-5">
-            <label class="form-label">IFSC Code</label>
-            {{ form.ifsc_code(class="form-control text-uppercase") }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Salary Structure -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header"><i class="bi bi-cash-stack me-2"></i>Salary Structure (Monthly ₹)</div>
-        <div class="card-body row g-3">
-          <div class="col-md-3">
-            <label class="form-label fw-bold text-primary">Gross CTC (Total)</label>
-            {{ form.gross_ctc(class="form-control", id="gross_ctc") }}
-            <div class="form-text">Set this to override the sum of components</div>
-          </div>
-          <div class="col-md-9"><div class="alert alert-info py-2 px-3 mb-0 small" id="grossDisplay">Computed Gross: ₹0.00</div></div>
-          <div class="col-md-2"><label class="form-label">Basic *</label>{{ form.basic_salary(class="form-control salary-comp", id="basic_salary") }}</div>
-          <div class="col-md-2"><label class="form-label">HRA</label>{{ form.hra(class="form-control salary-comp", id="hra") }}</div>
-          <div class="col-md-2"><label class="form-label">DA</label>{{ form.da(class="form-control salary-comp", id="da") }}</div>
-          <div class="col-md-2"><label class="form-label">Special Allow.</label>{{ form.special_allowance(class="form-control salary-comp", id="special_allowance") }}</div>
-          <div class="col-md-2"><label class="form-label">Other Allow.</label>{{ form.other_allowance(class="form-control salary-comp", id="other_allowance") }}</div>
-          <div class="col-md-2"><label class="form-label">Petrol <span class="text-muted small">(excl. PF+ESIC)</span></label>{{ form.petrol_allowance(class="form-control salary-comp", id="petrol_allowance") }}</div>
-          <div class="col-md-2"><label class="form-label">Conveyance</label>{{ form.conveyance(class="form-control salary-comp", id="conveyance") }}</div>
-          <div class="col-md-2"><label class="form-label">Medical Allow.</label>{{ form.medical_allowance(class="form-control salary-comp", id="medical_allowance") }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Statutory Options -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header"><i class="bi bi-shield-check me-2"></i>Statutory Options</div>
-        <div class="card-body row g-3 align-items-center">
-          <div class="col-md-2">
-            <div class="form-check form-switch">
-              {{ form.pf_applicable(class="form-check-input", role="switch") }}
-              <label class="form-check-label">PF Applicable</label>
+        <div class="col-md-10">
+          <div class="row g-3">
+            <div class="col-md-2">
+              <label class="form-label">Employee Code *</label>
+              {{ form.emp_code(class="form-control" + (" is-invalid" if form.emp_code.errors else "")) }}
+              {% for e in form.emp_code.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
             </div>
-          </div>
-          <div class="col-md-2">
-            <div class="form-check form-switch">
-              {{ form.pf_on_ceiling(class="form-check-input", role="switch") }}
-              <label class="form-check-label">PF Ceiling ₹15,000</label>
+            <div class="col-md-4">
+              <label class="form-label">First Name *</label>
+              {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else "")) }}
             </div>
-          </div>
-          <div class="col-md-2">
-            <div class="form-check form-switch">
-              {{ form.pension_eligible(class="form-check-input", role="switch") }}
-              <label class="form-check-label">EPS Eligible</label>
+            <div class="col-md-4">
+              <label class="form-label">Last Name *</label>
+              {{ form.last_name(class="form-control") }}
             </div>
-          </div>
-          <div class="col-md-2">
-            <div class="form-check form-switch">
-              {{ form.esic_applicable(class="form-check-input", role="switch") }}
-              <label class="form-check-label">ESIC Applicable</label>
+            <div class="col-md-2">
+              <label class="form-label">Gender</label>
+              {{ form.gender(class="form-select") }}
             </div>
-          </div>
-          <div class="col-md-2">
-            <div class="form-check form-switch">
-              {{ form.pt_applicable(class="form-check-input", role="switch") }}
-              <label class="form-check-label">PT Applicable</label>
+            <div class="col-md-4">
+              <label class="form-label">Father / Husband Name</label>
+              {{ form.father_husband_name(class="form-control") }}
             </div>
-          </div>
-          <div class="col-md-2">
-            <label class="form-label mb-0">TDS Regime</label>
-            {{ form.tds_regime(class="form-select form-select-sm") }}
-          </div>
-          <div class="col-12">
-            <div class="alert alert-info py-2 px-3 mb-0 small">
-              <strong>PT (Gujarat):</strong> ₹200/month if gross earned ≥ ₹12,000 &nbsp;|&nbsp;
-              <strong>LWF (Gujarat):</strong> ₹6/₹12 auto-deducted June &amp; December &nbsp;|&nbsp;
-              <strong>ESIC:</strong> 0.75%/3.25% — excluded if earned gross > ₹21,000 &nbsp;|&nbsp;
-              <strong>EPS:</strong> Zero if employee age ≥ 58 years
+            <div class="col-md-2">
+              <label class="form-label">Marital Status</label>
+              {{ form.marital_status(class="form-select") }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Date of Birth</label>
+              {{ form.date_of_birth(class="form-control") }}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-12">
-      {{ form.submit(class="btn btn-primary px-4") }}
-      {% if emp %}
-      <a href="{{ url_for('employees.detail', emp_id=emp.id) }}" class="btn btn-outline-secondary ms-2">
-        <i class="bi bi-arrow-left me-1"></i>Back to Employee
-      </a>
-      {% else %}
-      <a href="{{ url_for('employees.list_employees') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
-      {% endif %}
+    <!-- ── Tab 2: Employment ────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabEmployment">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Date of Joining *</label>
+          {{ form.date_of_joining(class="form-control" + (" is-invalid" if form.date_of_joining.errors else "")) }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Employment Type</label>
+          {{ form.employment_type(class="form-select") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label d-flex justify-content-between">Department *
+            <a href="#" class="text-primary small" onclick="openQuickAdd('department','Department',this);return false"><i class="bi bi-plus-circle"></i> Add</a>
+          </label>
+          {{ form.department(class="form-select" + (" is-invalid" if form.department.errors else ""), id="sel_department") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label d-flex justify-content-between">Designation *
+            <a href="#" class="text-primary small" onclick="openQuickAdd('designation','Designation',this);return false"><i class="bi bi-plus-circle"></i> Add</a>
+          </label>
+          {{ form.designation(class="form-select" + (" is-invalid" if form.designation.errors else ""), id="sel_designation") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label d-flex justify-content-between">Category
+            <a href="#" class="text-primary small" onclick="openQuickAdd('category','Category',this);return false"><i class="bi bi-plus-circle"></i> Add</a>
+          </label>
+          {{ form.category(class="form-select", id="sel_category") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label d-flex justify-content-between">Location *
+            <a href="{{ url_for('masters.list_locations') }}" target="_blank" class="text-primary small"><i class="bi bi-plus-circle"></i> Add</a>
+          </label>
+          {{ form.location(class="form-select" + (" is-invalid" if form.location.errors else "")) }}
+          {% for e in form.location.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="col-12"><div class="field-section">Exit Details (if applicable)</div></div>
+        <div class="col-md-3">
+          <label class="form-label">Date of Leaving</label>
+          {{ form.date_of_leaving(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Reason for Leaving</label>
+          {{ form.reason_for_leaving(class="form-select") }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Leaving Remarks</label>
+          {{ form.leaving_remarks(class="form-control") }}
+        </div>
+      </div>
     </div>
+
+    <!-- ── Tab 3: Contact ───────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabContact">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Mobile</label>
+          {{ form.mobile(class="form-control") }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Email</label>
+          {{ form.email(class="form-control") }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">City</label>
+          {{ form.city(class="form-control") }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">State</label>
+          {{ form.state(class="form-control") }}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Residential Address</label>
+          {{ form.address(class="form-control", rows=3) }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 4: Statutory IDs ─────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabStatutory">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">PAN Number</label>
+          {{ form.pan_number(class="form-control text-uppercase", maxlength=10) }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Aadhaar Number</label>
+          {{ form.aadhaar_number(class="form-control", maxlength=12) }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">UAN (PF)</label>
+          {{ form.uan_number(class="form-control", maxlength=12) }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">ESIC IP Number</label>
+          {{ form.esic_ip_number(class="form-control") }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 5: Bank ──────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabBank">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label class="form-label">Bank Name</label>
+          {{ form.bank_name(class="form-control") }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Account Number</label>
+          {{ form.bank_account(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">IFSC Code</label>
+          {{ form.ifsc_code(class="form-control text-uppercase") }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 6: Salary ────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabSalary">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-bold text-primary">Gross CTC (₹/month) *</label>
+          {{ form.gross_ctc(class="form-control fs-5", id="gross_ctc") }}
+        </div>
+        <div class="col-md-3">
+          <button type="button" class="btn btn-outline-primary w-100" onclick="autoFillSalary()">
+            <i class="bi bi-magic me-1"></i>Auto-fill from Company Structure
+          </button>
+        </div>
+        <div class="col-md-6">
+          <div class="alert alert-info py-2 px-3 mb-0 small" id="grossDisplay">
+            Computed sum of components: ₹0.00
+          </div>
+        </div>
+        <div class="col-12"><div class="field-section">Salary Components (Monthly ₹)</div></div>
+        <div class="col-md-2">
+          <label class="form-label">Basic *</label>
+          {{ form.basic_salary(class="form-control salary-comp", id="basic_salary") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">HRA</label>
+          {{ form.hra(class="form-control salary-comp", id="hra") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">DA</label>
+          {{ form.da(class="form-control salary-comp", id="da") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Special Allow.</label>
+          {{ form.special_allowance(class="form-control salary-comp", id="special_allowance") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Other Allow.</label>
+          {{ form.other_allowance(class="form-control salary-comp", id="other_allowance") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Petrol <span class="text-muted small">(excl. PF)</span></label>
+          {{ form.petrol_allowance(class="form-control salary-comp", id="petrol_allowance") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Conveyance</label>
+          {{ form.conveyance(class="form-control salary-comp", id="conveyance") }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Medical Allow.</label>
+          {{ form.medical_allowance(class="form-control salary-comp", id="medical_allowance") }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab 7: Settings ──────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="tabSettings">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-2">
+          <div class="form-check form-switch">
+            {{ form.pf_applicable(class="form-check-input", role="switch") }}
+            <label class="form-check-label fw-medium">PF Applicable</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-check form-switch">
+            {{ form.pf_on_ceiling(class="form-check-input", role="switch") }}
+            <label class="form-check-label">PF on ₹15,000 Ceiling</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-check form-switch">
+            {{ form.pension_eligible(class="form-check-input", role="switch") }}
+            <label class="form-check-label">EPS Eligible</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-check form-switch">
+            {{ form.esic_applicable(class="form-check-input", role="switch") }}
+            <label class="form-check-label fw-medium">ESIC Applicable</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-check form-switch">
+            {{ form.pt_applicable(class="form-check-input", role="switch") }}
+            <label class="form-check-label fw-medium">PT Applicable</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-0 fw-medium">TDS Regime</label>
+          {{ form.tds_regime(class="form-select form-select-sm") }}
+        </div>
+        <div class="col-12">
+          <div class="alert alert-light border py-2 px-3 small mb-0">
+            <strong>PF:</strong> Employee 12% / Employer 13% of PF wage &nbsp;|&nbsp;
+            <strong>ESIC:</strong> 0.75% / 3.25% (excluded if gross &gt; ₹21,000) &nbsp;|&nbsp;
+            <strong>PT:</strong> ₹200/month if gross ≥ threshold &nbsp;|&nbsp;
+            <strong>LWF:</strong> June &amp; December deduction &nbsp;|&nbsp;
+            <strong>EPS:</strong> Zero if age ≥ 58 years
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end tab-content -->
+
+  <!-- Save / Back -->
+  <div class="d-flex gap-2">
+    {{ form.submit(class="btn btn-primary px-4") }}
+    {% if emp %}
+    <a href="{{ url_for('employees.detail', emp_id=emp.id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back to Employee
+    </a>
+    {% else %}
+    <a href="{{ url_for('employees.list_employees') }}" class="btn btn-outline-secondary">Cancel</a>
+    {% endif %}
   </div>
 </form>
 {% endblock %}
+
 {% block extra_js %}
 <script>
-  const ids = ['basic_salary','hra','da','special_allowance','other_allowance','petrol_allowance','conveyance','medical_allowance'];
-  function updateGross() {
-    let t = 0;
-    ids.forEach(id => { const v = parseFloat(document.getElementById(id)?.value || 0); if (!isNaN(v)) t += v; });
-    document.getElementById('grossDisplay').textContent = 'Computed Gross (components): ₹' + t.toLocaleString('en-IN', {minimumFractionDigits:2});
-  }
-  ids.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updateGross); });
-  updateGross();
+// ── Gross sum updater ─────────────────────────────────────────────────────
+const salaryIds = ['basic_salary','hra','da','special_allowance','other_allowance',
+                   'petrol_allowance','conveyance','medical_allowance'];
+function updateGross() {
+  let t = 0;
+  salaryIds.forEach(id => { const v = parseFloat(document.getElementById(id)?.value || 0); if (!isNaN(v)) t += v; });
+  document.getElementById('grossDisplay').textContent = 'Computed sum of components: ₹' + t.toLocaleString('en-IN', {minimumFractionDigits:2});
+}
+salaryIds.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', updateGross); });
+updateGross();
 
-// Quick-add master modal
+// ── Auto-fill from company salary structure ───────────────────────────────
+async function autoFillSalary() {
+  const gross = parseFloat(document.getElementById('gross_ctc')?.value || 0);
+  if (!gross) { alert('Enter Gross CTC first.'); return; }
+  try {
+    const res = await fetch('{{ url_for("company.get_salary_structure", company_id=active_company.id if active_company else 0) }}');
+    const s = await res.json();
+    const basic = Math.round(gross * s.ss_basic_pct / 100);
+    const hra   = Math.round(basic * s.ss_hra_pct / 100);
+    const da    = Math.round(basic * s.ss_da_pct / 100);
+    const spl   = Math.round(gross * s.ss_special_pct / 100);
+    const other = Math.round(gross * s.ss_other_pct / 100);
+    const conv  = Math.round(gross * s.ss_conveyance_pct / 100);
+    const med   = Math.round(gross * s.ss_medical_pct / 100);
+    const petrol= Math.round(gross * s.ss_petrol_pct / 100);
+    document.getElementById('basic_salary').value = basic;
+    document.getElementById('hra').value = hra;
+    document.getElementById('da').value = da;
+    document.getElementById('special_allowance').value = spl;
+    document.getElementById('other_allowance').value = other;
+    document.getElementById('conveyance').value = conv;
+    document.getElementById('medical_allowance').value = med;
+    document.getElementById('petrol_allowance').value = petrol;
+    updateGross();
+  } catch(e) { alert('Could not load company salary structure.'); }
+}
+
+// ── Show tab with errors on submit failure ────────────────────────────────
+const tabFieldMap = {
+  'tabPersonal':   ['emp_code','first_name','last_name'],
+  'tabEmployment': ['date_of_joining','department','designation','location'],
+  'tabSalary':     ['basic_salary','gross_ctc'],
+};
+document.addEventListener('DOMContentLoaded', function() {
+  Object.entries(tabFieldMap).forEach(([tabId, fields]) => {
+    const hasError = fields.some(f => document.querySelector(`[name="${f}"].is-invalid`));
+    if (hasError) {
+      const tabBtn = document.querySelector(`[data-bs-target="#${tabId}"]`);
+      if (tabBtn) { tabBtn.classList.add('has-error'); tabBtn.click(); }
+    }
+  });
+});
+
+// ── Quick-add master modal ────────────────────────────────────────────────
 let _qaTarget = null;
-function openQuickAdd(model, label, triggerEl) {
+function openQuickAdd(model, label) {
   _qaTarget = {model, selectId: 'sel_' + model};
   document.getElementById('qaLabel').textContent = 'Add New ' + label;
   document.getElementById('qaInput').value = '';
@@ -281,10 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const data = await res.json();
     if (data.error) { document.getElementById('qaError').textContent = data.error; return; }
     const sel = document.getElementById(_qaTarget.selectId);
-    if (sel) {
-      const opt = new Option(name, name, true, true);
-      sel.add(opt);
-    }
+    if (sel) sel.add(new Option(name, name, true, true));
     bootstrap.Modal.getInstance(document.getElementById('quickAddModal')).hide();
   });
 });

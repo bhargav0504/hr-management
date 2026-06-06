@@ -11,6 +11,15 @@ from sqlalchemy import text
 app = create_app()
 
 MYSQL_MIGRATIONS = [
+    # Company salary structure columns
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_basic_pct DECIMAL(5,2) DEFAULT 50",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_hra_pct DECIMAL(5,2) DEFAULT 40",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_da_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_special_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_other_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_conveyance_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_medical_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_petrol_pct DECIMAL(5,2) DEFAULT 0",
     # Company new columns
     "ALTER TABLE companies ADD COLUMN IF NOT EXISTS company_type VARCHAR(50)",
     "ALTER TABLE companies ADD COLUMN IF NOT EXISTS formation_date DATE",
@@ -22,6 +31,15 @@ MYSQL_MIGRATIONS = [
     "ALTER TABLE companies ADD COLUMN IF NOT EXISTS lwf_no VARCHAR(20)",
     "ALTER TABLE companies ADD COLUMN IF NOT EXISTS authorised_signatory VARCHAR(200)",
     "ALTER TABLE companies ADD COLUMN IF NOT EXISTS manager_name VARCHAR(200)",
+    # Company salary structure
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_basic_pct DECIMAL(5,2) DEFAULT 50",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_hra_pct DECIMAL(5,2) DEFAULT 40",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_da_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_special_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_other_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_conveyance_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_medical_pct DECIMAL(5,2) DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS ss_petrol_pct DECIMAL(5,2) DEFAULT 0",
     # Location new columns
     "ALTER TABLE locations ADD COLUMN IF NOT EXISTS address TEXT",
     "ALTER TABLE locations ADD COLUMN IF NOT EXISTS state VARCHAR(50)",
@@ -94,6 +112,7 @@ with app.app_context():
     from app.models.branch import Branch  # noqa
     from app.models.fnf import FnFRecord  # noqa
     from app.models.bonus import BonusRecord  # noqa
+    from app.models.arrears import ArrearRecord  # noqa
     db.create_all()
     print('New tables created (payroll_locks, branches, fnf_records, bonus_records).')
     print('\nMigration complete!')

@@ -31,11 +31,21 @@ class Company(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Payroll settings (overrides config defaults)
+    # Payroll settings
     esic_ceiling = db.Column(db.Numeric(10, 2), default=21000)
     pf_wage_ceiling = db.Column(db.Numeric(10, 2), default=15000)
     pt_threshold = db.Column(db.Numeric(10, 2), default=12000)
     pt_amount = db.Column(db.Numeric(10, 2), default=200)
+
+    # Salary Structure Template (% of gross CTC, applied when adding employees)
+    ss_basic_pct = db.Column(db.Numeric(5, 2), default=50)        # Basic % of gross
+    ss_hra_pct = db.Column(db.Numeric(5, 2), default=40)          # HRA % of basic
+    ss_da_pct = db.Column(db.Numeric(5, 2), default=0)            # DA % of basic
+    ss_special_pct = db.Column(db.Numeric(5, 2), default=0)       # Special Allow % of gross
+    ss_other_pct = db.Column(db.Numeric(5, 2), default=0)         # Other Allow % of gross
+    ss_conveyance_pct = db.Column(db.Numeric(5, 2), default=0)    # Conveyance % of gross
+    ss_medical_pct = db.Column(db.Numeric(5, 2), default=0)       # Medical Allow % of gross
+    ss_petrol_pct = db.Column(db.Numeric(5, 2), default=0)        # Petrol Allow % of gross
 
     employees = db.relationship('Employee', back_populates='company', lazy='dynamic')
     branches = db.relationship('Branch', back_populates='company', cascade='all,delete-orphan')

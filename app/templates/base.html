@@ -152,6 +152,20 @@
           </ul>
         </li>
 
+        <!-- Arrears -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'arrears.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-clock-history me-1"></i>Arrears
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('arrears.list_arrears') }}">
+              <i class="bi bi-list-check"></i> Arrears Register</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('arrears.add_arrear') }}">
+              <i class="bi bi-plus-circle"></i> Add Arrear</a></li>
+          </ul>
+        </li>
+
         <!-- F&F -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle {{ 'active' if 'fnf.' in (request.endpoint or '') }}"

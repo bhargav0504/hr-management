@@ -57,6 +57,15 @@ class CompanyForm(FlaskForm):
     pt_threshold = DecimalField('PT Threshold Gross (₹)', default=12000, validators=[Optional(), NumberRange(min=0)], places=2)
     pt_amount = DecimalField('PT Monthly Amount (₹)', default=200, validators=[Optional(), NumberRange(min=0)], places=2)
     is_active = BooleanField('Active', default=True)
+    # Salary structure template
+    ss_basic_pct = DecimalField('Basic (% of Gross)', default=50, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_hra_pct = DecimalField('HRA (% of Basic)', default=40, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_da_pct = DecimalField('DA (% of Basic)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_special_pct = DecimalField('Special Allow. (% of Gross)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_other_pct = DecimalField('Other Allow. (% of Gross)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_conveyance_pct = DecimalField('Conveyance (% of Gross)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_medical_pct = DecimalField('Medical Allow. (% of Gross)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
+    ss_petrol_pct = DecimalField('Petrol Allow. (% of Gross)', default=0, validators=[Optional(), NumberRange(0, 100)], places=2)
     submit = SubmitField('Save Company')
 
 
@@ -144,5 +153,25 @@ def _populate(company, form):
               'address', 'city', 'state', 'pin',
               'pan', 'tan', 'gst', 'pf_no', 'esic_no', 'pt_no', 'lwf_no',
               'lwf_applicable', 'esic_ceiling', 'pf_wage_ceiling',
-              'pt_threshold', 'pt_amount', 'is_active']:
+              'pt_threshold', 'pt_amount', 'is_active',
+              'ss_basic_pct', 'ss_hra_pct', 'ss_da_pct', 'ss_special_pct',
+              'ss_other_pct', 'ss_conveyance_pct', 'ss_medical_pct', 'ss_petrol_pct']:
         setattr(company, f, getattr(form, f).data)
+
+
+@company_bp.route('/salary-structure/<int:company_id>')
+@login_required
+def get_salary_structure(company_id):
+    """JSON endpoint — returns salary structure percentages for the given company."""
+    from flask import jsonify
+    company = Company.query.get_or_404(company_id)
+    return jsonify({
+        'ss_basic_pct': float(company.ss_basic_pct or 50),
+        'ss_hra_pct': float(company.ss_hra_pct or 40),
+        'ss_da_pct': float(company.ss_da_pct or 0),
+        'ss_special_pct': float(company.ss_special_pct or 0),
+        'ss_other_pct': float(company.ss_other_pct or 0),
+        'ss_conveyance_pct': float(company.ss_conveyance_pct or 0),
+        'ss_medical_pct': float(company.ss_medical_pct or 0),
+        'ss_petrol_pct': float(company.ss_petrol_pct or 0),
+    })
