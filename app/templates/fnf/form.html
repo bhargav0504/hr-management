@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Process F&F{% endblock %}
+{% block page_title %}Process Full & Final Settlement{% endblock %}
+{% block content %}
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  <div class="row g-3">
+
+    <!-- Employee & Exit Details -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header"><i class="bi bi-person-dash me-2"></i>Employee & Exit Details</div>
+        <div class="card-body row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Employee *</label>
+            <select name="employee_id" class="form-select" required onchange="this.form.action='{{ url_for('fnf.create_fnf') }}?emp_id='+this.value;this.form.method='get';this.form.submit()">
+              <option value="">— Select Employee —</option>
+              {% for emp in employees %}
+              <option value="{{ emp.id }}" {{ 'selected' if selected_emp and selected_emp.id==emp.id }}>
+                {{ emp.emp_code }} — {{ emp.full_name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Reason for Leaving</label>
+            <select name="reason" class="form-select">
+              <option value="resignation">Resignation</option>
+              <option value="termination">Termination</option>
+              <option value="retirement">Retirement</option>
+              <option value="absconding">Absconding</option>
+              <option value="contract_end">Contract End</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Resignation Date</label>
+            <input type="date" name="resignation_date" class="form-control" value="{{ today }}"/>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Last Working Day *</label>
+            <input type="date" name="last_working_day" class="form-control" value="{{ today }}" required/>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Settlement Date</label>
+            <input type="date" name="settlement_date" class="form-control" value="{{ today }}"/>
+          </div>
+          {% if selected_emp %}
+          <div class="col-12">
+            <div class="alert alert-info py-2 small mb-0">
+              <strong>{{ selected_emp.full_name }}</strong> &nbsp;|&nbsp;
+              Dept: {{ selected_emp.department }} &nbsp;|&nbsp;
+              DOJ: {{ selected_emp.date_of_joining }} &nbsp;|&nbsp;
+              Gross: {{ selected_emp.gross_salary|inr }}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if selected_emp %}
+    <!-- Earnings -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header text-success fw-semibold"><i class="bi bi-plus-circle me-2"></i>Earnings in F&F</div>
+        <div class="card-body row g-3">
+          <div class="col-6">
+            <label class="form-label">Days Worked in Final Month</label>
+            <input type="number" name="salary_days" class="form-control" value="13" min="0" max="31" id="salaryDays"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Salary for Days (₹)</label>
+            <input type="number" name="salary_for_days" class="form-control" step="0.01"
+                   value="{{ pre.salary_for_days or 0 }}" id="salaryAmt"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Leave Encashment Days</label>
+            <input type="number" name="leave_encashment_days" class="form-control" value="0" step="0.5" min="0"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Leave Encashment (₹)</label>
+            <input type="number" name="leave_encashment" class="form-control" step="0.01"
+                   value="{{ pre.leave_encashment or 0 }}"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Gratuity (₹) <span class="text-muted small">(auto if ≥5 yrs)</span></label>
+            <input type="number" name="gratuity" class="form-control" step="0.01"
+                   value="{{ pre.gratuity or 0 }}"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Bonus (₹)</label>
+            <input type="number" name="bonus" class="form-control" step="0.01" value="0"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Other Earnings (₹)</label>
+            <input type="number" name="other_earnings" class="form-control" step="0.01" value="0"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Other Earnings Remarks</label>
+            <input type="text" name="other_earnings_remarks" class="form-control" placeholder="Description"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deductions -->
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header text-danger fw-semibold"><i class="bi bi-dash-circle me-2"></i>Deductions in F&F</div>
+        <div class="card-body row g-3">
+          <div class="col-6">
+            <label class="form-label">Notice Period Short (Days)</label>
+            <input type="number" name="notice_period_days" class="form-control" value="0" min="0"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Notice Period Recovery (₹)</label>
+            <input type="number" name="notice_period_recovery" class="form-control" step="0.01"
+                   value="{{ pre.notice_period_recovery or 0 }}"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Advance Recovery (₹)</label>
+            <input type="number" name="advance_recovery" class="form-control" step="0.01"
+                   value="{{ pre.advance_recovery or 0 }}"/>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Other Deductions (₹)</label>
+            <input type="number" name="other_deductions" class="form-control" step="0.01" value="0"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Other Deductions Remarks</label>
+            <input type="text" name="other_deductions_remarks" class="form-control" placeholder="Description"/>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Remarks</label>
+            <textarea name="remarks" class="form-control" rows="2" placeholder="Any additional notes"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-check-circle me-1"></i>Save F&F Record
+      </button>
+      <a href="{{ url_for('fnf.list_fnf') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

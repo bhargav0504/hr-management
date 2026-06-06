@@ -92,6 +92,8 @@ with app.app_context():
     # Create new tables — safe, skips if exists
     from app.models.payroll import PayrollLock  # noqa
     from app.models.branch import Branch  # noqa
+    from app.models.fnf import FnFRecord  # noqa
+    from app.models.bonus import BonusRecord  # noqa
     db.create_all()
-    print('New tables created (salary_components, payroll_locks, branches).')
+    print('New tables created (payroll_locks, branches, fnf_records, bonus_records).')
     print('\nMigration complete!')

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}F&F — {{ r.employee.full_name }}{% endblock %}
+{% block page_title %}F&F Settlement — {{ r.employee.full_name }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Settlement Summary</span>
+        <span class="badge bg-{{ 'success' if r.status=='settled' else ('danger' if r.status=='cancelled' else 'warning text-dark') }}">
+          {{ r.status|upper }}
+        </span>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3 small">
+          <div class="col-6"><strong>Employee:</strong> {{ r.employee.full_name }} ({{ r.employee.emp_code }})</div>
+          <div class="col-6"><strong>Department:</strong> {{ r.employee.department }}</div>
+          <div class="col-6"><strong>Reason:</strong> {{ r.reason or '—' }}</div>
+          <div class="col-6"><strong>Last Working Day:</strong> {{ r.last_working_day }}</div>
+          <div class="col-6"><strong>Resignation Date:</strong> {{ r.resignation_date or '—' }}</div>
+          <div class="col-6"><strong>Settlement Date:</strong> {{ r.settlement_date or 'Pending' }}</div>
+        </div>
+        <hr/>
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-success">Earnings</h6>
+            <table class="table table-sm small">
+              <tr><td>Salary for {{ r.salary_days }} days</td><td class="text-end">{{ r.salary_for_days|inr }}</td></tr>
+              <tr><td>Leave Encashment ({{ r.leave_encashment_days }} days)</td><td class="text-end">{{ r.leave_encashment|inr }}</td></tr>
+              <tr><td>Gratuity</td><td class="text-end">{{ r.gratuity|inr }}</td></tr>
+              <tr><td>Bonus</td><td class="text-end">{{ r.bonus|inr }}</td></tr>
+              {% if r.other_earnings %}<tr><td>Other ({{ r.other_earnings_remarks }})</td><td class="text-end">{{ r.other_earnings|inr }}</td></tr>{% endif %}
+              <tr class="table-success fw-bold"><td>Total Earnings</td><td class="text-end">{{ r.total_earnings|inr }}</td></tr>
+            </table>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-danger">Deductions</h6>
+            <table class="table table-sm small">
+              <tr><td>Notice Period Recovery</td><td class="text-end">{{ r.notice_period_recovery|inr }}</td></tr>
+              <tr><td>Advance Recovery</td><td class="text-end">{{ r.advance_recovery|inr }}</td></tr>
+              {% if r.other_deductions %}<tr><td>Other ({{ r.other_deductions_remarks }})</td><td class="text-end">{{ r.other_deductions|inr }}</td></tr>{% endif %}
+              <tr class="table-danger fw-bold"><td>Total Deductions</td><td class="text-end">{{ r.total_deductions|inr }}</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="alert alert-success text-center mt-2 mb-0">
+          <h5 class="mb-0 fw-bold">Net Settlement Payable: {{ r.net_settlement|inr }}</h5>
+        </div>
+        {% if r.remarks %}<p class="small text-muted mt-2 mb-0">Remarks: {{ r.remarks }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Actions</div>
+      <div class="card-body d-grid gap-2">
+        {% if r.status == 'draft' %}
+        <form method="post" action="{{ url_for('fnf.settle', fnf_id=r.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="btn btn-success w-100"><i class="bi bi-check-circle me-1"></i>Mark as Settled</button>
+        </form>
+        {% if current_user.is_admin() %}
+        <form method="post" action="{{ url_for('fnf.cancel_fnf', fnf_id=r.id) }}" onsubmit="return confirm('Cancel this F&F?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button class="btn btn-outline-danger w-100">Cancel F&F</button>
+        </form>
+        {% endif %}
+        {% endif %}
+        <a href="{{ url_for('fnf.list_fnf') }}" class="btn btn-outline-secondary">
+          <i class="bi bi-arrow-left me-1"></i>Back to Register
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

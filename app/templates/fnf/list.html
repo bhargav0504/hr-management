@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}F&F Register{% endblock %}
+{% block page_title %}Full & Final Settlement Register{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted small">{{ records|length }} F&F record(s)</span>
+  <a href="{{ url_for('fnf.create_fnf') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Process F&F
+  </a>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover table-sm mb-0 small">
+      <thead>
+        <tr>
+          <th>Emp Code</th><th>Name</th><th>Last Working Day</th><th>Reason</th>
+          <th class="text-end">Total Earnings</th><th class="text-end">Total Deductions</th>
+          <th class="text-end">Net Settlement</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td><code>{{ r.employee.emp_code }}</code></td>
+          <td>{{ r.employee.full_name }}</td>
+          <td>{{ r.last_working_day.strftime('%d %b %Y') }}</td>
+          <td>{{ r.reason or '—' }}</td>
+          <td class="text-end">{{ r.total_earnings|inr }}</td>
+          <td class="text-end">{{ r.total_deductions|inr }}</td>
+          <td class="text-end fw-bold text-success">{{ r.net_settlement|inr }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if r.status=='settled' else ('danger' if r.status=='cancelled' else 'warning text-dark') }}">
+              {{ r.status|upper }}
+            </span>
+          </td>
+          <td><a href="{{ url_for('fnf.detail', fnf_id=r.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No F&F records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

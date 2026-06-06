@@ -152,6 +152,34 @@
           </ul>
         </li>
 
+        <!-- F&F -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'fnf.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-person-dash me-1"></i>F&amp;F
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('fnf.list_fnf') }}">
+              <i class="bi bi-list-check"></i> F&amp;F Register</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('fnf.create_fnf') }}">
+              <i class="bi bi-plus-circle"></i> Process F&amp;F</a></li>
+          </ul>
+        </li>
+
+        <!-- Bonus -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'bonus.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-gift me-1"></i>Bonus
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('bonus.list_bonus') }}">
+              <i class="bi bi-list-check"></i> Bonus Register</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('bonus.process_bonus') }}">
+              <i class="bi bi-calculator"></i> Process Bonus</a></li>
+          </ul>
+        </li>
+
         <!-- Reports -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle {{ 'active' if 'reports.' in (request.endpoint or '') }}"
@@ -206,11 +234,18 @@
             <li><a class="dropdown-item" href="{{ url_for('company.list_companies') }}">
               <i class="bi bi-buildings"></i> Companies</a></li>
             <li><a class="dropdown-item" href="{{ url_for('company.create_company') }}">
-              <i class="bi bi-plus-circle"></i> Add Company</a></li>
+              <i class="bi bi-plus-circle text-success"></i> Add Company</a></li>
             <li><hr class="dropdown-divider"/></li>
             <li><a class="dropdown-item" href="{{ url_for('auth.users') }}">
               <i class="bi bi-people"></i> Users</a></li>
           </ul>
+        </li>
+        <!-- Quick Add Company button -->
+        <li class="nav-item d-none d-lg-block">
+          <a class="nav-link" href="{{ url_for('company.create_company') }}" title="Add Company"
+             style="color:#4ade80!important">
+            <i class="bi bi-plus-circle-fill"></i>
+          </a>
         </li>
         {% endif %}
 
