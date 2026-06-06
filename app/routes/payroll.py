@@ -129,12 +129,19 @@ def run_payroll():
     month = int(request.args.get('month', today.month))
     year = int(request.args.get('year', today.year))
     total_days = int(request.args.get('total_days', 26))
-    employees = Employee.query.filter_by(company_id=company_id, is_active=True).order_by(Employee.emp_code).all()
+    location_filter = request.args.get('location', '')
+    from app.models.masters import Location as _Loc
+    locations = _Loc.query.filter_by(company_id=company_id, is_active=True).order_by(_Loc.name).all()
+    emp_q = Employee.query.filter_by(company_id=company_id, is_active=True)
+    if location_filter:
+        emp_q = emp_q.filter_by(location=location_filter)
+    employees = emp_q.order_by(Employee.emp_code).all()
     months = [(i, calendar.month_name[i]) for i in range(1, 13)]
     years = list(range(2020, today.year + 2))
     return render_template('payroll/run.html',
                            employees=employees, month=month, year=year,
-                           months=months, years=years, total_days=total_days)
+                           months=months, years=years, total_days=total_days,
+                           locations=locations, location_filter=location_filter)
 
 
 @payroll_bp.route('/record/<int:record_id>')

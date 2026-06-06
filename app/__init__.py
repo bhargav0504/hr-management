@@ -40,6 +40,8 @@ def create_app(config_class=Config):
     from app.routes.company import company_bp
     from app.routes.masters import masters_bp
     from app.routes.leave import leave_bp
+    from app.routes.branches import branches_bp
+    from app.models.branch import Branch  # noqa — register model
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -50,6 +52,7 @@ def create_app(config_class=Config):
     app.register_blueprint(company_bp)
     app.register_blueprint(masters_bp)
     app.register_blueprint(leave_bp)
+    app.register_blueprint(branches_bp)
 
     # ── Company guard: require company selection after login ──────────────────
     EXEMPT_ENDPOINTS = {

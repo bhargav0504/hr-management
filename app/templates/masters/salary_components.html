@@ -65,6 +65,9 @@
               <td>{{ '✓' if sc.is_statutory else '—' }}</td>
               <td><span class="badge bg-{{ 'success' if sc.is_active else 'secondary' }}">{{ 'Active' if sc.is_active else 'Off' }}</span></td>
               <td class="text-end">
+                {% if sc.is_statutory %}
+                <span class="badge bg-secondary">Statutory — Fixed</span>
+                {% else %}
                 <form method="post" action="{{ url_for('masters.toggle_salary_component', sc_id=sc.id) }}" class="d-inline">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   <button class="btn btn-sm btn-outline-secondary">{{ 'Off' if sc.is_active else 'On' }}</button>
@@ -73,6 +76,7 @@
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>
+                {% endif %}
               </td>
             </tr>
             {% else %}
@@ -98,6 +102,9 @@
               <td>{{ '✓' if sc.is_statutory else '—' }}</td>
               <td><span class="badge bg-{{ 'success' if sc.is_active else 'secondary' }}">{{ 'Active' if sc.is_active else 'Off' }}</span></td>
               <td class="text-end">
+                {% if sc.is_statutory %}
+                <span class="badge bg-secondary">Statutory — Fixed</span>
+                {% else %}
                 <form method="post" action="{{ url_for('masters.toggle_salary_component', sc_id=sc.id) }}" class="d-inline">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   <button class="btn btn-sm btn-outline-secondary">{{ 'Off' if sc.is_active else 'On' }}</button>
@@ -106,6 +113,7 @@
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                 </form>
+                {% endif %}
               </td>
             </tr>
             {% else %}

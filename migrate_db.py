@@ -11,6 +11,17 @@ from sqlalchemy import text
 app = create_app()
 
 MYSQL_MIGRATIONS = [
+    # Company new columns
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS company_type VARCHAR(50)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS formation_date DATE",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS city VARCHAR(100)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS state VARCHAR(50)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS pin VARCHAR(10)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS phone VARCHAR(20)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS email VARCHAR(120)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS lwf_no VARCHAR(20)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS authorised_signatory VARCHAR(200)",
+    "ALTER TABLE companies ADD COLUMN IF NOT EXISTS manager_name VARCHAR(200)",
     # Location new columns
     "ALTER TABLE locations ADD COLUMN IF NOT EXISTS address TEXT",
     "ALTER TABLE locations ADD COLUMN IF NOT EXISTS state VARCHAR(50)",
@@ -30,6 +41,17 @@ MYSQL_MIGRATIONS = [
 ]
 
 SQLITE_MIGRATIONS = [
+    # Company new columns
+    "ALTER TABLE companies ADD COLUMN company_type VARCHAR(50)",
+    "ALTER TABLE companies ADD COLUMN formation_date DATE",
+    "ALTER TABLE companies ADD COLUMN city VARCHAR(100)",
+    "ALTER TABLE companies ADD COLUMN state VARCHAR(50)",
+    "ALTER TABLE companies ADD COLUMN pin VARCHAR(10)",
+    "ALTER TABLE companies ADD COLUMN phone VARCHAR(20)",
+    "ALTER TABLE companies ADD COLUMN email VARCHAR(120)",
+    "ALTER TABLE companies ADD COLUMN lwf_no VARCHAR(20)",
+    "ALTER TABLE companies ADD COLUMN authorised_signatory VARCHAR(200)",
+    "ALTER TABLE companies ADD COLUMN manager_name VARCHAR(200)",
     # SQLite does not support IF NOT EXISTS in ALTER TABLE
     "ALTER TABLE locations ADD COLUMN address TEXT",
     "ALTER TABLE locations ADD COLUMN state VARCHAR(50)",
@@ -67,8 +89,9 @@ with app.app_context():
             else:
                 print(f'  ERROR: {e}')
 
-    # Create new tables (salary_components, payroll_locks) — safe, skips if exists
-    from app.models.payroll import PayrollLock  # noqa — ensure model is registered
+    # Create new tables — safe, skips if exists
+    from app.models.payroll import PayrollLock  # noqa
+    from app.models.branch import Branch  # noqa
     db.create_all()
-    print('New tables created (salary_components, payroll_locks).')
+    print('New tables created (salary_components, payroll_locks, branches).')
     print('\nMigration complete!')

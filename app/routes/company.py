@@ -5,13 +5,26 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.models.company import Company
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, BooleanField, SubmitField, DecimalField
+from wtforms import StringField, TextAreaField, BooleanField, SubmitField, DecimalField, SelectField, DateField
 from wtforms.validators import DataRequired, Optional, Length, NumberRange
 
 company_bp = Blueprint('company', __name__, url_prefix='/company')
 
 LOGO_FOLDER = os.path.join('app', 'static', 'uploads', 'logos')
 ALLOWED = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+COMPANY_TYPES = [
+    ('', '— Select Type —'),
+    ('Private Limited', 'Private Limited (Pvt. Ltd.)'),
+    ('Public Limited', 'Public Limited (Ltd.)'),
+    ('LLP', 'Limited Liability Partnership (LLP)'),
+    ('Partnership', 'Partnership Firm'),
+    ('Proprietorship', 'Sole Proprietorship'),
+    ('OPC', 'One Person Company (OPC)'),
+    ('Trust', 'Trust / NGO'),
+    ('Society', 'Society / Co-operative'),
+    ('Other', 'Other'),
+]
 
 
 def _allowed(filename):
@@ -20,15 +33,25 @@ def _allowed(filename):
 
 class CompanyForm(FlaskForm):
     name = StringField('Company Name *', validators=[DataRequired(), Length(1, 200)])
-    short_name = StringField('Short Name', validators=[Optional(), Length(max=50)])
-    address = TextAreaField('Address', validators=[Optional()])
+    short_name = StringField('Short Name / Trade Name', validators=[Optional(), Length(max=50)])
+    company_type = SelectField('Type of Company', choices=COMPANY_TYPES, validators=[Optional()])
+    formation_date = DateField('Formation / Incorporation Date', validators=[Optional()])
+    authorised_signatory = StringField('Authorised Signatory Name', validators=[Optional(), Length(max=200)])
+    manager_name = StringField('HR / Manager Name', validators=[Optional(), Length(max=200)])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    email = StringField('Email', validators=[Optional(), Length(max=120)])
+    address = TextAreaField('Registered Address', validators=[Optional()])
+    city = StringField('City', validators=[Optional(), Length(max=100)])
+    state = StringField('State', validators=[Optional(), Length(max=50)])
+    pin = StringField('PIN Code', validators=[Optional(), Length(max=10)])
     pan = StringField('PAN', validators=[Optional(), Length(max=10)])
     tan = StringField('TAN', validators=[Optional(), Length(max=10)])
     gst = StringField('GST Number', validators=[Optional(), Length(max=15)])
     pf_no = StringField('PF Registration No.', validators=[Optional(), Length(max=50)])
     esic_no = StringField('ESIC Registration No.', validators=[Optional(), Length(max=20)])
     pt_no = StringField('PT Registration No.', validators=[Optional(), Length(max=20)])
-    lwf_applicable = BooleanField('Gujarat LWF Applicable', default=True)
+    lwf_no = StringField('LWF Registration No.', validators=[Optional(), Length(max=20)])
+    lwf_applicable = BooleanField('LWF Applicable', default=True)
     esic_ceiling = DecimalField('ESIC Wage Ceiling (₹)', default=21000, validators=[Optional(), NumberRange(min=0)], places=2)
     pf_wage_ceiling = DecimalField('PF Wage Ceiling (₹)', default=15000, validators=[Optional(), NumberRange(min=0)], places=2)
     pt_threshold = DecimalField('PT Threshold Gross (₹)', default=12000, validators=[Optional(), NumberRange(min=0)], places=2)
@@ -116,7 +139,10 @@ def edit_company(company_id):
 
 
 def _populate(company, form):
-    for f in ['name', 'short_name', 'address', 'pan', 'tan', 'gst',
-              'pf_no', 'esic_no', 'pt_no', 'lwf_applicable',
-              'esic_ceiling', 'pf_wage_ceiling', 'pt_threshold', 'pt_amount', 'is_active']:
+    for f in ['name', 'short_name', 'company_type', 'formation_date',
+              'authorised_signatory', 'manager_name', 'phone', 'email',
+              'address', 'city', 'state', 'pin',
+              'pan', 'tan', 'gst', 'pf_no', 'esic_no', 'pt_no', 'lwf_no',
+              'lwf_applicable', 'esic_ceiling', 'pf_wage_ceiling',
+              'pt_threshold', 'pt_amount', 'is_active']:
         setattr(company, f, getattr(form, f).data)
