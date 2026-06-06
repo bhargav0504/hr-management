@@ -70,6 +70,15 @@ SQLITE_MIGRATIONS = [
     "ALTER TABLE companies ADD COLUMN lwf_no VARCHAR(20)",
     "ALTER TABLE companies ADD COLUMN authorised_signatory VARCHAR(200)",
     "ALTER TABLE companies ADD COLUMN manager_name VARCHAR(200)",
+    # Company salary structure columns
+    "ALTER TABLE companies ADD COLUMN ss_basic_pct DECIMAL DEFAULT 50",
+    "ALTER TABLE companies ADD COLUMN ss_hra_pct DECIMAL DEFAULT 40",
+    "ALTER TABLE companies ADD COLUMN ss_da_pct DECIMAL DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN ss_special_pct DECIMAL DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN ss_other_pct DECIMAL DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN ss_conveyance_pct DECIMAL DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN ss_medical_pct DECIMAL DEFAULT 0",
+    "ALTER TABLE companies ADD COLUMN ss_petrol_pct DECIMAL DEFAULT 0",
     # SQLite does not support IF NOT EXISTS in ALTER TABLE
     "ALTER TABLE locations ADD COLUMN address TEXT",
     "ALTER TABLE locations ADD COLUMN state VARCHAR(50)",
