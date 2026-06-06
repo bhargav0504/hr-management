@@ -7,21 +7,32 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
   <style>
-    :root { --primary:#1a56db; --primary-dark:#1e429f; --sidebar-bg:#1e2a45; --sidebar-width:270px; }
+    :root { --primary:#1a56db; --primary-dark:#1e429f; --nav-bg:#1e2a45; }
     body { background:#f0f4f8; font-family:'Segoe UI',sans-serif; }
-    .sidebar { width:var(--sidebar-width); height:100vh; background:var(--sidebar-bg); position:fixed; top:0; left:0; z-index:100; display:flex; flex-direction:column; overflow-y:scroll; }
-    .sidebar::-webkit-scrollbar { width:5px; } .sidebar::-webkit-scrollbar-track { background:rgba(0,0,0,.15); } .sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.25); border-radius:3px; }
-    .sidebar::-webkit-scrollbar { width:4px; } .sidebar::-webkit-scrollbar-track { background:transparent; } .sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.2); border-radius:2px; }
-    .sidebar-brand { padding:1rem 1.25rem; border-bottom:1px solid rgba(255,255,255,.1); color:#fff; font-weight:700; font-size:1rem; display:flex; align-items:center; gap:8px; }
-    .sidebar-brand small { font-size:.65rem; font-weight:400; opacity:.7; display:block; }
-    .sidebar-nav { padding:.5rem 0; flex:1; }
-    .sidebar-section { font-size:.62rem; color:rgba(255,255,255,.4); padding:.8rem 1.25rem .3rem; text-transform:uppercase; letter-spacing:1px; }
-    .sidebar-nav a { display:flex; align-items:center; gap:9px; padding:.5rem 1.25rem; color:rgba(255,255,255,.75); text-decoration:none; font-size:.85rem; border-left:3px solid transparent; transition:all .15s; }
-    .sidebar-nav a:hover,.sidebar-nav a.active { background:rgba(255,255,255,.08); color:#fff; border-left-color:var(--primary); }
-    .sidebar-nav a i { width:17px; text-align:center; font-size:.95rem; }
-    .main-content { margin-left:var(--sidebar-width); min-height:100vh; }
-    .topbar { background:#fff; border-bottom:1px solid #e5e7eb; padding:.65rem 1.5rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
-    .topbar-title { font-weight:600; color:#1e2a45; font-size:1rem; }
+
+    /* ── Top navbar ─────────────────────────────────────────────────────── */
+    .topnav { background:var(--nav-bg); padding:0 1rem; }
+    .topnav .navbar-brand { color:#fff !important; font-weight:700; font-size:.95rem; display:flex; align-items:center; gap:8px; padding:.55rem 0; }
+    .topnav .navbar-brand small { font-size:.65rem; font-weight:400; opacity:.65; display:block; line-height:1; }
+    .topnav .nav-link { color:rgba(255,255,255,.78) !important; font-size:.82rem; padding:.65rem .75rem !important; border-bottom:2px solid transparent; transition:all .15s; }
+    .topnav .nav-link:hover,
+    .topnav .nav-link.active,
+    .topnav .nav-link.show { color:#fff !important; border-bottom-color:var(--primary); background:rgba(255,255,255,.06); }
+    .topnav .dropdown-menu { background:#fff; border:none; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,.15); min-width:200px; padding:.4rem 0; }
+    .topnav .dropdown-item { font-size:.82rem; padding:.45rem 1rem; color:#374151; display:flex; align-items:center; gap:8px; }
+    .topnav .dropdown-item i { width:16px; text-align:center; color:#6b7280; }
+    .topnav .dropdown-item:hover { background:#f0f4ff; color:var(--primary); }
+    .topnav .dropdown-item:hover i { color:var(--primary); }
+    .topnav .dropdown-divider { margin:.3rem 0; border-color:#f0f0f0; }
+    .topnav .dropdown-header { font-size:.67rem; text-transform:uppercase; letter-spacing:.8px; color:#9ca3af; padding:.4rem 1rem .2rem; }
+    .topnav .user-pill { color:rgba(255,255,255,.7); font-size:.78rem; display:flex; align-items:center; gap:6px; padding:.4rem .7rem; border-radius:20px; border:1px solid rgba(255,255,255,.15); transition:all .15s; text-decoration:none; }
+    .topnav .user-pill:hover { background:rgba(255,255,255,.1); color:#fff; border-color:rgba(255,255,255,.3); }
+
+    /* ── Page title bar ──────────────────────────────────────────────────── */
+    .page-titlebar { background:#fff; border-bottom:1px solid #e5e7eb; padding:.55rem 1.5rem; display:flex; align-items:center; justify-content:space-between; }
+    .page-titlebar-title { font-weight:600; color:#1e2a45; font-size:.95rem; }
+
+    /* ── Content ─────────────────────────────────────────────────────────── */
     .page-content { padding:1.5rem; }
     .card { border:none; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
     .card-header { background:#fff; border-bottom:1px solid #f0f0f0; font-weight:600; }
@@ -32,151 +43,226 @@
     .stat-card .stat-label { font-size:.8rem; opacity:.85; }
     .btn-primary { background:var(--primary); border-color:var(--primary); }
     .btn-primary:hover { background:var(--primary-dark); border-color:var(--primary-dark); }
-    @media print { .sidebar,.topbar,.no-print { display:none!important; } .main-content { margin-left:0!important; } }
+
+    @media print {
+      .topnav, .page-titlebar, .no-print { display:none !important; }
+      .page-content { padding:0 !important; }
+    }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 {% if current_user.is_authenticated %}
-<div class="sidebar">
-  <div class="sidebar-brand">
-    {% if active_company and active_company.logo_filename %}
-      <img src="{{ url_for('static', filename='uploads/logos/' ~ active_company.logo_filename) }}" style="height:28px;object-fit:contain;" alt="Logo"/>
-    {% else %}
-      <i class="bi bi-building"></i>
-    {% endif %}
-    <div>
-      {{ active_company.name if active_company else 'HR Manager' }}
-      <small>{{ active_company.short_name or 'Indian Payroll' if active_company else 'Gujarat Norms' }}</small>
-    </div>
-  </div>
 
-  <nav class="sidebar-nav">
-    <div class="sidebar-section">Main</div>
-    <a href="{{ url_for('dashboard.index') }}" class="{{ 'active' if request.endpoint=='dashboard.index' }}">
-      <i class="bi bi-speedometer2"></i> Dashboard
-    </a>
+<!-- ── Top Navigation Bar ──────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg topnav sticky-top">
+  <div class="container-fluid px-2">
 
-    <div class="sidebar-section">Employees</div>
-    <a href="{{ url_for('employees.list_employees') }}" class="{{ 'active' if request.endpoint=='employees.list_employees' }}">
-      <i class="bi bi-people"></i> Employees
-    </a>
-    <a href="{{ url_for('employees.create_employee') }}">
-      <i class="bi bi-person-plus"></i> Add Employee
-    </a>
-    <a href="{{ url_for('employees.import_employees') }}">
-      <i class="bi bi-file-earmark-arrow-up"></i> Bulk Import
-    </a>
-
-    <div class="sidebar-section">Leave</div>
-    <a href="{{ url_for('leave.list_applications') }}" class="{{ 'active' if 'leave.' in (request.endpoint or '') }}">
-      <i class="bi bi-calendar-check"></i> Leave Register
-    </a>
-    <a href="{{ url_for('leave.apply') }}">
-      <i class="bi bi-calendar-plus"></i> Apply Leave
-    </a>
-    <a href="{{ url_for('leave.balances') }}">
-      <i class="bi bi-bar-chart"></i> Leave Balances
-    </a>
-
-    <div class="sidebar-section">Payroll</div>
-    <a href="{{ url_for('payroll.index') }}" class="{{ 'active' if request.endpoint=='payroll.index' }}">
-      <i class="bi bi-cash-stack"></i> Payroll Register
-    </a>
-    <a href="{{ url_for('payroll.run_payroll') }}" class="{{ 'active' if request.endpoint=='payroll.run_payroll' }}">
-      <i class="bi bi-play-circle"></i> Run Payroll
-    </a>
-    <a href="{{ url_for('payroll.salary_sheet') }}" class="{{ 'active' if request.endpoint=='payroll.salary_sheet' }}">
-      <i class="bi bi-table"></i> Salary Sheet
-    </a>
-    <a href="{{ url_for('payroll.import_attendance') }}">
-      <i class="bi bi-file-earmark-spreadsheet"></i> Attendance Upload
-    </a>
-
-    <div class="sidebar-section">Advances</div>
-    <a href="{{ url_for('advances.list_advances') }}" class="{{ 'active' if 'advances.' in (request.endpoint or '') }}">
-      <i class="bi bi-wallet2"></i> Advances
-    </a>
-    <a href="{{ url_for('advances.create_advance') }}">
-      <i class="bi bi-plus-circle"></i> Grant Advance
-    </a>
-
-    <div class="sidebar-section">Reports</div>
-    <a href="{{ url_for('reports.tds_summary') }}" class="{{ 'active' if request.endpoint=='reports.tds_summary' }}">
-      <i class="bi bi-receipt"></i> TDS Summary
-    </a>
-    <a href="{{ url_for('reports.lwf_summary') }}" class="{{ 'active' if request.endpoint=='reports.lwf_summary' }}">
-      <i class="bi bi-bank"></i> Gujarat LWF
-    </a>
-    <a href="{{ url_for('reports.pt_summary') }}" class="{{ 'active' if request.endpoint=='reports.pt_summary' }}">
-      <i class="bi bi-building-check"></i> Prof. Tax
-    </a>
-
-    <div class="sidebar-section">Masters</div>
-    <a href="{{ url_for('masters.index') }}" class="{{ 'active' if request.endpoint == 'masters.index' }}">
-      <i class="bi bi-sliders"></i> Setup Masters
-    </a>
-    <a href="{{ url_for('branches.list_branches') }}" class="{{ 'active' if 'branches.' in (request.endpoint or '') }}">
-      <i class="bi bi-building"></i> Branches
-    </a>
-    <a href="{{ url_for('masters.departments') }}"><i class="bi bi-diagram-3"></i> Departments</a>
-    <a href="{{ url_for('masters.designations') }}"><i class="bi bi-person-badge"></i> Designations</a>
-    <a href="{{ url_for('masters.categories') }}"><i class="bi bi-tag"></i> Categories</a>
-    <a href="{{ url_for('masters.list_locations') }}"><i class="bi bi-geo-alt"></i> Locations</a>
-    <a href="{{ url_for('masters.salary_components') }}"><i class="bi bi-cash-coin"></i> Salary Components</a>
-    <a href="{{ url_for('masters.leave_types') }}"><i class="bi bi-calendar3"></i> Leave Types</a>
-
-    {% if current_user.is_admin() %}
-    <div class="sidebar-section">Admin</div>
-    <a href="{{ url_for('company.list_companies') }}" class="{{ 'active' if 'company.' in (request.endpoint or '') }}">
-      <i class="bi bi-buildings"></i> Companies
-    </a>
-    <a href="{{ url_for('company.create_company') }}">
-      <i class="bi bi-plus-circle"></i> Add Company
-    </a>
-    <a href="{{ url_for('auth.users') }}" class="{{ 'active' if 'auth.' in (request.endpoint or '') }}">
-      <i class="bi bi-shield-lock"></i> Users
-    </a>
-    {% endif %}
-  </nav>
-
-  <div style="padding:.9rem 1.25rem;border-top:1px solid rgba(255,255,255,.1)">
-    <div style="color:rgba(255,255,255,.6);font-size:.8rem">{{ current_user.username }}</div>
-    <div class="d-flex gap-2 mt-1">
-      <a href="{{ url_for('company.select') }}" style="color:rgba(255,255,255,.5);font-size:.75rem;text-decoration:none" title="Switch company">
-        <i class="bi bi-arrow-left-right"></i> Switch
-      </a>
-      <a href="{{ url_for('auth.logout') }}" style="color:rgba(255,255,255,.5);font-size:.75rem;text-decoration:none">
-        <i class="bi bi-box-arrow-left"></i> Logout
-      </a>
-    </div>
-  </div>
-</div>
-
-<div class="main-content">
-  <div class="topbar">
-    <span class="topbar-title">{% block page_title %}{% endblock %}</span>
-    <div class="d-flex align-items-center gap-2">
-      {% if active_company %}
-        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 fw-normal">
-          <i class="bi bi-building me-1"></i>{{ active_company.short_name or active_company.name }}
-        </span>
+    <!-- Brand -->
+    <a class="navbar-brand" href="{{ url_for('dashboard.index') }}">
+      {% if active_company and active_company.logo_filename %}
+        <img src="{{ url_for('static', filename='uploads/logos/' ~ active_company.logo_filename) }}"
+             style="height:26px;object-fit:contain;" alt="Logo"/>
+      {% else %}
+        <i class="bi bi-building-fill-gear text-primary"></i>
       {% endif %}
-      <span class="badge bg-secondary">{{ current_user.role|upper }}</span>
+      <div>
+        {{ active_company.name if active_company else 'HR Manager' }}
+        <small>{{ active_company.company_type or 'Indian Payroll' if active_company else 'Indian Payroll' }}</small>
+      </div>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            style="color:rgba(255,255,255,.7)">
+      <i class="bi bi-list fs-5"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a class="nav-link {{ 'active' if request.endpoint=='dashboard.index' }}"
+             href="{{ url_for('dashboard.index') }}">
+            <i class="bi bi-speedometer2 me-1"></i>Dashboard
+          </a>
+        </li>
+
+        <!-- Employees -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'employees.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-people me-1"></i>Employees
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('employees.list_employees') }}">
+              <i class="bi bi-people"></i> All Employees</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('employees.create_employee') }}">
+              <i class="bi bi-person-plus"></i> Add Employee</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('employees.import_employees') }}">
+              <i class="bi bi-file-earmark-arrow-up"></i> Bulk Import</a></li>
+          </ul>
+        </li>
+
+        <!-- Leave -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'leave.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-calendar-check me-1"></i>Leave
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('leave.list_applications') }}">
+              <i class="bi bi-calendar-check"></i> Leave Register</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('leave.apply') }}">
+              <i class="bi bi-calendar-plus"></i> Apply Leave</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('leave.balances') }}">
+              <i class="bi bi-bar-chart"></i> Leave Balances</a></li>
+          </ul>
+        </li>
+
+        <!-- Payroll -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'payroll.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-cash-stack me-1"></i>Payroll
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('payroll.index') }}">
+              <i class="bi bi-cash-stack"></i> Payroll Register</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('payroll.run_payroll') }}">
+              <i class="bi bi-play-circle"></i> Run Payroll</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('payroll.salary_sheet') }}">
+              <i class="bi bi-table"></i> Salary Sheet</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('payroll.import_attendance') }}">
+              <i class="bi bi-file-earmark-spreadsheet"></i> Attendance Upload</a></li>
+          </ul>
+        </li>
+
+        <!-- Advances -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'advances.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-wallet2 me-1"></i>Advances
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('advances.list_advances') }}">
+              <i class="bi bi-wallet2"></i> All Advances</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('advances.create_advance') }}">
+              <i class="bi bi-plus-circle"></i> Grant Advance</a></li>
+          </ul>
+        </li>
+
+        <!-- Reports -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if 'reports.' in (request.endpoint or '') }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-bar-chart me-1"></i>Reports
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('reports.tds_summary') }}">
+              <i class="bi bi-receipt"></i> TDS Summary</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('reports.lwf_summary') }}">
+              <i class="bi bi-bank"></i> Gujarat LWF</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('reports.pt_summary') }}">
+              <i class="bi bi-building-check"></i> Professional Tax</a></li>
+          </ul>
+        </li>
+
+        <!-- Masters -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if ('masters.' in (request.endpoint or '') or 'branches.' in (request.endpoint or '')) }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-sliders me-1"></i>Masters
+          </a>
+          <ul class="dropdown-menu">
+            <li><h6 class="dropdown-header">Organisation</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('branches.list_branches') }}">
+              <i class="bi bi-building"></i> Branches</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.departments') }}">
+              <i class="bi bi-diagram-3"></i> Departments</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.designations') }}">
+              <i class="bi bi-person-badge"></i> Designations</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.categories') }}">
+              <i class="bi bi-tag"></i> Categories</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.list_locations') }}">
+              <i class="bi bi-geo-alt"></i> Locations</a></li>
+            <li><hr class="dropdown-divider"/></li>
+            <li><h6 class="dropdown-header">Payroll</h6></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.salary_components') }}">
+              <i class="bi bi-cash-coin"></i> Salary Components</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('masters.leave_types') }}">
+              <i class="bi bi-calendar3"></i> Leave Types</a></li>
+          </ul>
+        </li>
+
+        {% if current_user.is_admin() %}
+        <!-- Admin -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {{ 'active' if ('company.' in (request.endpoint or '') or 'auth.' in (request.endpoint or '')) }}"
+             href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-shield-lock me-1"></i>Admin
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('company.list_companies') }}">
+              <i class="bi bi-buildings"></i> Companies</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('company.create_company') }}">
+              <i class="bi bi-plus-circle"></i> Add Company</a></li>
+            <li><hr class="dropdown-divider"/></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.users') }}">
+              <i class="bi bi-people"></i> Users</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+      </ul>
+
+      <!-- Right side: company badge + user menu -->
+      <div class="d-flex align-items-center gap-2">
+        {% if active_company %}
+        <a href="{{ url_for('company.select') }}"
+           class="badge bg-primary bg-opacity-20 text-white border border-white border-opacity-25 fw-normal text-decoration-none"
+           style="font-size:.73rem;padding:.35em .7em" title="Switch company">
+          <i class="bi bi-arrow-left-right me-1"></i>{{ active_company.short_name or active_company.name }}
+        </a>
+        {% endif %}
+
+        <div class="dropdown">
+          <a href="#" class="user-pill dropdown-toggle" data-bs-toggle="dropdown" style="text-decoration:none">
+            <i class="bi bi-person-circle"></i>
+            {{ current_user.username }}
+            <span class="badge bg-secondary" style="font-size:.62rem">{{ current_user.role }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('company.select') }}">
+              <i class="bi bi-arrow-left-right"></i> Switch Company</a></li>
+            <li><hr class="dropdown-divider"/></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+              <i class="bi bi-box-arrow-left"></i> Logout</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="page-content">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    {% endwith %}
-    {% block content %}{% endblock %}
-  </div>
+</nav>
+
+<!-- ── Page Title Bar ───────────────────────────────────────────────────── -->
+<div class="page-titlebar no-print">
+  <span class="page-titlebar-title">{% block page_title %}{% endblock %}</span>
 </div>
+
+<!-- ── Page Content ────────────────────────────────────────────────────── -->
+<div class="page-content">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
 {% else %}
   {% block auth_content %}{% endblock %}
 {% endif %}
