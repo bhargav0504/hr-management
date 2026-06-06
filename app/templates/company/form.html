@@ -9,16 +9,18 @@
       <div class="card">
         <div class="card-header"><i class="bi bi-buildings me-2"></i>Company Details</div>
         <div class="card-body row g-3">
-          <div class="col-md-6">{{ form.name.label(class='form-label') }}{{ form.name(class='form-control') }}</div>
-          <div class="col-md-3">{{ form.short_name.label(class='form-label') }}{{ form.short_name(class='form-control') }}</div>
-          <div class="col-md-3">
-            <label class="form-label">Company Logo</label>
-            <input type="file" name="logo" class="form-control" accept="image/*"/>
-            {% if company and company.logo_filename %}
-              <div class="mt-1"><img src="{{ url_for('static', filename='uploads/logos/' ~ company.logo_filename) }}" style="height:40px"/></div>
-            {% endif %}
-          </div>
-          <div class="col-md-12">{{ form.address.label(class='form-label') }}{{ form.address(class='form-control', rows=2) }}</div>
+          <div class="col-md-5">{{ form.name.label(class='form-label') }}{{ form.name(class='form-control') }}</div>
+          <div class="col-md-2">{{ form.short_name.label(class='form-label') }}{{ form.short_name(class='form-control') }}</div>
+          <div class="col-md-3">{{ form.company_type.label(class='form-label') }}{{ form.company_type(class='form-select') }}</div>
+          <div class="col-md-2">{{ form.formation_date.label(class='form-label') }}{{ form.formation_date(class='form-control') }}</div>
+          <div class="col-md-4">{{ form.authorised_signatory.label(class='form-label') }}{{ form.authorised_signatory(class='form-control', placeholder='Name of authorised person') }}</div>
+          <div class="col-md-4">{{ form.manager_name.label(class='form-label') }}{{ form.manager_name(class='form-control', placeholder='HR / Manager name') }}</div>
+          <div class="col-md-2">{{ form.phone.label(class='form-label') }}{{ form.phone(class='form-control') }}</div>
+          <div class="col-md-2">{{ form.email.label(class='form-label') }}{{ form.email(class='form-control') }}</div>
+          <div class="col-md-8">{{ form.address.label(class='form-label') }}{{ form.address(class='form-control', rows=2) }}</div>
+          <div class="col-md-2">{{ form.city.label(class='form-label') }}{{ form.city(class='form-control') }}</div>
+          <div class="col-md-1">{{ form.state.label(class='form-label') }}{{ form.state(class='form-control') }}</div>
+          <div class="col-md-1">{{ form.pin.label(class='form-label') }}{{ form.pin(class='form-control') }}</div>
           <div class="col-md-3">{{ form.pan.label(class='form-label') }}{{ form.pan(class='form-control text-uppercase') }}</div>
           <div class="col-md-3">{{ form.tan.label(class='form-label') }}{{ form.tan(class='form-control text-uppercase') }}</div>
           <div class="col-md-3">{{ form.gst.label(class='form-label') }}{{ form.gst(class='form-control text-uppercase') }}</div>
@@ -33,9 +35,10 @@
       <div class="card h-100">
         <div class="card-header"><i class="bi bi-shield-check me-2"></i>Statutory Registrations</div>
         <div class="card-body row g-3">
-          <div class="col-12">{{ form.pf_no.label(class='form-label') }}{{ form.pf_no(class='form-control') }}</div>
-          <div class="col-12">{{ form.esic_no.label(class='form-label') }}{{ form.esic_no(class='form-control') }}</div>
-          <div class="col-12">{{ form.pt_no.label(class='form-label') }}{{ form.pt_no(class='form-control') }}</div>
+          <div class="col-6">{{ form.pf_no.label(class='form-label') }}{{ form.pf_no(class='form-control') }}</div>
+          <div class="col-6">{{ form.esic_no.label(class='form-label') }}{{ form.esic_no(class='form-control') }}</div>
+          <div class="col-6">{{ form.pt_no.label(class='form-label') }}{{ form.pt_no(class='form-control') }}</div>
+          <div class="col-6">{{ form.lwf_no.label(class='form-label') }}{{ form.lwf_no(class='form-control') }}</div>
           <div class="col-12">
             <div class="form-check form-switch">{{ form.lwf_applicable(class='form-check-input', role='switch') }}<label class="form-check-label">{{ form.lwf_applicable.label.text }}</label></div>
           </div>
