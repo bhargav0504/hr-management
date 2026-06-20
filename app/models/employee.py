@@ -77,7 +77,9 @@ class Employee(db.Model):
     company = db.relationship('Company', back_populates='employees')
     salary_records = db.relationship('SalaryRecord', back_populates='employee', lazy='dynamic')
     advances = db.relationship('Advance', back_populates='employee', lazy='dynamic')
-    family_members = db.relationship('EmployeeFamily', back_populates='employee', cascade='all,delete-orphan')
+    family_members   = db.relationship('EmployeeFamily',        back_populates='employee', cascade='all,delete-orphan')
+    education_details= db.relationship('EmployeeEducation',     back_populates='employee', cascade='all,delete-orphan')
+    prev_employments = db.relationship('EmployeePrevEmployment',back_populates='employee', cascade='all,delete-orphan')
     leave_balances = db.relationship('LeaveBalance', back_populates='employee', cascade='all,delete-orphan')
     leave_applications = db.relationship('LeaveApplication', back_populates='employee', cascade='all,delete-orphan')
 

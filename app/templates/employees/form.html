@@ -29,6 +29,10 @@
       <i class="bi bi-cash-stack me-1"></i>Salary</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSettings" type="button">
       <i class="bi bi-shield-check me-1"></i>Settings</button></li>
+    {% if emp %}
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabOther" type="button" id="tab-other">
+      <i class="bi bi-people me-1"></i>Other Details</button></li>
+    {% endif %}
   </ul>
 
   <div class="tab-content card border-top-0 rounded-0 rounded-bottom p-3 bg-white shadow-sm mb-3" id="empTabContent">
@@ -303,6 +307,149 @@
         </div>
       </div>
     </div>
+
+    <!-- ── Tab 8: Other Details (Education / Family / Prev Emp) ─── -->
+    {% if emp %}
+    <div class="tab-pane fade" id="tabOther">
+
+      <!-- Education Details -->
+      <div class="field-section"><i class="bi bi-mortarboard me-1"></i>Education Details</div>
+      <div class="row g-2 mb-2">
+        <form method="post" action="{{ url_for('employees.add_education', emp_id=emp.id) }}" class="row g-2 align-items-end">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="col-md-3"><label class="form-label form-label-sm">Degree *</label>
+            <input type="text" name="degree" class="form-control form-control-sm" placeholder="e.g. B.Com, MBA" required></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Passing Year</label>
+            <input type="text" name="passing_year" class="form-control form-control-sm" placeholder="2018"></div>
+          <div class="col-md-4"><label class="form-label form-label-sm">University</label>
+            <input type="text" name="university" class="form-control form-control-sm" placeholder="University name"></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Class / Grade</label>
+            <input type="text" name="class_grade" class="form-control form-control-sm" placeholder="First Class"></div>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-success btn-sm w-100"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </form>
+      </div>
+      <table class="table table-sm table-hover mb-4">
+        <thead class="table-light"><tr><th>#</th><th>Degree</th><th>Year</th><th>University</th><th>Class</th><th></th></tr></thead>
+        <tbody>
+        {% for edu in emp.education_details %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ edu.degree }}</td>
+            <td>{{ edu.passing_year or '—' }}</td>
+            <td>{{ edu.university or '—' }}</td>
+            <td>{{ edu.class_grade or '—' }}</td>
+            <td>
+              <form method="post" action="{{ url_for('employees.delete_education', emp_id=emp.id, edu_id=edu.id) }}" onsubmit="return confirm('Delete?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="text-muted text-center">No education records.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Family Details -->
+      <div class="field-section"><i class="bi bi-house-heart me-1"></i>Family Details</div>
+      <div class="row g-2 mb-2">
+        <form method="post" action="{{ url_for('employees.add_family_inline', emp_id=emp.id) }}" class="row g-2 align-items-end">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="col-md-3"><label class="form-label form-label-sm">Name *</label>
+            <input type="text" name="name" class="form-control form-control-sm" required></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control form-control-sm"></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Relation</label>
+            <select name="relation" class="form-select form-select-sm">
+              <option value="">-- Select --</option>
+              <option>Father</option><option>Mother</option><option>Spouse</option>
+              <option>Son</option><option>Daughter</option><option>Other</option>
+            </select></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Guardian Name</label>
+            <input type="text" name="guardian_name" class="form-control form-control-sm"></div>
+          <div class="col-md-1 d-flex flex-column align-items-center">
+            <label class="form-label form-label-sm">Nominee</label>
+            <input type="checkbox" name="is_nominee" class="form-check-input mt-1"></div>
+          <div class="col-md-1"><label class="form-label form-label-sm">Nominee %</label>
+            <input type="number" name="nominee_percent" class="form-control form-control-sm" value="0" min="0" max="100"></div>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-success btn-sm w-100"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </form>
+      </div>
+      <table class="table table-sm table-hover mb-4">
+        <thead class="table-light"><tr><th>#</th><th>Name</th><th>DOB</th><th>Relation</th><th>Guardian</th><th>Nominee</th><th></th></tr></thead>
+        <tbody>
+        {% for fm in emp.family_members %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ fm.name }}</td>
+            <td>{{ fm.date_of_birth.strftime('%d-%m-%Y') if fm.date_of_birth else '—' }}</td>
+            <td>{{ fm.relation }}</td>
+            <td>{{ fm.guardian_name or '—' }}</td>
+            <td>{% if fm.is_nominee %}<span class="badge bg-success">Yes ({{ fm.nominee_percent }}%)</span>{% else %}No{% endif %}</td>
+            <td>
+              <form method="post" action="{{ url_for('employees.delete_family_inline', emp_id=emp.id, member_id=fm.id) }}" onsubmit="return confirm('Delete?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-muted text-center">No family members.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Previous Employment -->
+      <div class="field-section"><i class="bi bi-clock-history me-1"></i>Previous Employment Details</div>
+      <div class="row g-2 mb-2">
+        <form method="post" action="{{ url_for('employees.add_prev_employment', emp_id=emp.id) }}" class="row g-2 align-items-end">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="col-md-3"><label class="form-label form-label-sm">Employer Name *</label>
+            <input type="text" name="employer_name" class="form-control form-control-sm" required></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Joining Date</label>
+            <input type="date" name="joining_date" class="form-control form-control-sm"></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Leaving Date</label>
+            <input type="date" name="leaving_date" class="form-control form-control-sm"></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Joining Designation</label>
+            <input type="text" name="joining_designation" class="form-control form-control-sm"></div>
+          <div class="col-md-2"><label class="form-label form-label-sm">Last Salary</label>
+            <input type="number" name="last_salary" class="form-control form-control-sm" min="0" step="0.01"></div>
+          <div class="col-md-1">
+            <button type="submit" class="btn btn-success btn-sm w-100"><i class="bi bi-plus-lg"></i></button>
+          </div>
+        </form>
+      </div>
+      <table class="table table-sm table-hover mb-2">
+        <thead class="table-light"><tr><th>#</th><th>Employer</th><th>Joined</th><th>Left</th><th>Designation</th><th>Last Salary</th><th></th></tr></thead>
+        <tbody>
+        {% for pe in emp.prev_employments %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ pe.employer_name }}</td>
+            <td>{{ pe.joining_date.strftime('%d-%m-%Y') if pe.joining_date else '—' }}</td>
+            <td>{{ pe.leaving_date.strftime('%d-%m-%Y') if pe.leaving_date else '—' }}</td>
+            <td>{{ pe.joining_designation or '—' }}</td>
+            <td>{{ pe.last_salary | inr if pe.last_salary else '—' }}</td>
+            <td>
+              <form method="post" action="{{ url_for('employees.delete_prev_employment', emp_id=emp.id, pe_id=pe.id) }}" onsubmit="return confirm('Delete?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-xs btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="text-muted text-center">No previous employment records.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+    {% endif %}
 
   </div><!-- end tab-content -->
 

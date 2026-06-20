@@ -18,4 +18,6 @@ build/
 Thumbs.db
 migrations/
 doc_images/
+doc_images_temp/
+software_text.txt
 Software.docx

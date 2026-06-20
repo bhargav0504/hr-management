@@ -56,6 +56,9 @@ MYSQL_MIGRATIONS = [
     "ALTER TABLE locations ADD COLUMN IF NOT EXISTS lwf_months VARCHAR(20) DEFAULT '6,12'",
     # Employee new column
     "ALTER TABLE employees ADD COLUMN IF NOT EXISTS state VARCHAR(50)",
+    # Family member extra columns
+    "ALTER TABLE employee_family ADD COLUMN IF NOT EXISTS guardian_name VARCHAR(200)",
+    "ALTER TABLE employee_family ADD COLUMN IF NOT EXISTS relation_with_guardian VARCHAR(50)",
 ]
 
 SQLITE_MIGRATIONS = [
@@ -94,6 +97,9 @@ SQLITE_MIGRATIONS = [
     "ALTER TABLE locations ADD COLUMN lwf_employer DECIMAL DEFAULT 12",
     "ALTER TABLE locations ADD COLUMN lwf_months VARCHAR(20) DEFAULT '6,12'",
     "ALTER TABLE employees ADD COLUMN state VARCHAR(50)",
+    # Family member extra columns
+    "ALTER TABLE employee_family ADD COLUMN guardian_name VARCHAR(200)",
+    "ALTER TABLE employee_family ADD COLUMN relation_with_guardian VARCHAR(50)",
 ]
 
 with app.app_context():
@@ -122,6 +128,8 @@ with app.app_context():
     from app.models.fnf import FnFRecord  # noqa
     from app.models.bonus import BonusRecord  # noqa
     from app.models.arrears import ArrearRecord  # noqa
+    from app.models.bank import Bank, BankBranch  # noqa
+    from app.models.employee_extras import EmployeeEducation, EmployeePrevEmployment  # noqa
     db.create_all()
-    print('New tables created (payroll_locks, branches, fnf_records, bonus_records).')
+    print('New tables created (payroll_locks, branches, fnf_records, bonus_records, banks, bank_branches, employee_education, employee_prev_employment).')
     print('\nMigration complete!')

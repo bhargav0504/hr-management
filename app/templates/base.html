@@ -212,11 +212,14 @@
 
         <!-- Masters -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {{ 'active' if ('masters.' in (request.endpoint or '') or 'branches.' in (request.endpoint or '')) }}"
+          <a class="nav-link dropdown-toggle {{ 'active' if ('masters.' in (request.endpoint or '') or 'branches.' in (request.endpoint or '') or 'bank_master.' in (request.endpoint or '')) }}"
              href="#" data-bs-toggle="dropdown">
             <i class="bi bi-sliders me-1"></i>Masters
           </a>
           <ul class="dropdown-menu">
+            <li><a class="dropdown-item fw-semibold" href="{{ url_for('masters.index') }}">
+              <i class="bi bi-grid"></i> All Masters</a></li>
+            <li><hr class="dropdown-divider"/></li>
             <li><h6 class="dropdown-header">Organisation</h6></li>
             <li><a class="dropdown-item" href="{{ url_for('branches.list_branches') }}">
               <i class="bi bi-building"></i> Branches</a></li>
@@ -234,6 +237,8 @@
               <i class="bi bi-cash-coin"></i> Salary Components</a></li>
             <li><a class="dropdown-item" href="{{ url_for('masters.leave_types') }}">
               <i class="bi bi-calendar3"></i> Leave Types</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('bank_master.index') }}">
+              <i class="bi bi-bank"></i> Bank & Branches</a></li>
           </ul>
         </li>
 

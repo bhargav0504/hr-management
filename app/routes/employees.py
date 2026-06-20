@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from app import db
 from app.models.employee import Employee
 from app.models.family import EmployeeFamily
+from app.models.employee_extras import EmployeeEducation, EmployeePrevEmployment
 from app.models.masters import Department, Designation, Category, Location
 from flask_wtf import FlaskForm
 from wtforms import (StringField, SelectField, DecimalField, DateField,
@@ -265,6 +266,114 @@ def delete_family(emp_id, member_id):
     db.session.commit()
     flash('Removed.', 'success')
     return redirect(url_for('employees.family', emp_id=emp_id))
+
+
+# ── Education ────────────────────────────────────────────────────────────────
+
+@employees_bp.route('/<int:emp_id>/education/add', methods=['POST'])
+@login_required
+def add_education(emp_id):
+    Employee.query.get_or_404(emp_id)
+    edu = EmployeeEducation(
+        employee_id=emp_id,
+        degree=request.form.get('degree', '').strip(),
+        passing_year=request.form.get('passing_year', '').strip() or None,
+        university=request.form.get('university', '').strip() or None,
+        class_grade=request.form.get('class_grade', '').strip() or None,
+    )
+    db.session.add(edu)
+    db.session.commit()
+    flash('Education record added.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
+
+
+@employees_bp.route('/<int:emp_id>/education/<int:edu_id>/delete', methods=['POST'])
+@login_required
+def delete_education(emp_id, edu_id):
+    edu = EmployeeEducation.query.get_or_404(edu_id)
+    db.session.delete(edu)
+    db.session.commit()
+    flash('Removed.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
+
+
+# ── Previous Employment ───────────────────────────────────────────────────────
+
+@employees_bp.route('/<int:emp_id>/prev-employment/add', methods=['POST'])
+@login_required
+def add_prev_employment(emp_id):
+    from datetime import datetime as dt
+    Employee.query.get_or_404(emp_id)
+
+    def _date(field):
+        v = request.form.get(field, '').strip()
+        try:
+            return dt.strptime(v, '%Y-%m-%d').date() if v else None
+        except ValueError:
+            return None
+
+    pe = EmployeePrevEmployment(
+        employee_id=emp_id,
+        employer_name=request.form.get('employer_name', '').strip(),
+        joining_date=_date('joining_date'),
+        leaving_date=_date('leaving_date'),
+        joining_designation=request.form.get('joining_designation', '').strip() or None,
+        leaving_designation=request.form.get('leaving_designation', '').strip() or None,
+        last_salary=request.form.get('last_salary', None) or None,
+    )
+    db.session.add(pe)
+    db.session.commit()
+    flash('Previous employment added.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
+
+
+@employees_bp.route('/<int:emp_id>/prev-employment/<int:pe_id>/delete', methods=['POST'])
+@login_required
+def delete_prev_employment(emp_id, pe_id):
+    pe = EmployeePrevEmployment.query.get_or_404(pe_id)
+    db.session.delete(pe)
+    db.session.commit()
+    flash('Removed.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
+
+
+# ── Family (inline on edit form) ──────────────────────────────────────────────
+
+@employees_bp.route('/<int:emp_id>/family-inline/add', methods=['POST'])
+@login_required
+def add_family_inline(emp_id):
+    from datetime import datetime as dt
+    Employee.query.get_or_404(emp_id)
+    dob_str = request.form.get('date_of_birth', '').strip()
+    dob = None
+    try:
+        dob = dt.strptime(dob_str, '%Y-%m-%d').date() if dob_str else None
+    except ValueError:
+        pass
+    member = EmployeeFamily(
+        employee_id=emp_id,
+        name=request.form.get('name', '').strip(),
+        relation=request.form.get('relation', ''),
+        date_of_birth=dob,
+        guardian_name=request.form.get('guardian_name', '').strip() or None,
+        relation_with_guardian=request.form.get('relation_with_guardian', '').strip() or None,
+        is_nominee=request.form.get('is_nominee') == 'on',
+        nominee_percent=int(request.form.get('nominee_percent', 0) or 0),
+    )
+    db.session.add(member)
+    db.session.commit()
+    flash('Family member added.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
+
+
+@employees_bp.route('/<int:emp_id>/family-inline/<int:member_id>/delete', methods=['POST'])
+@login_required
+def delete_family_inline(emp_id, member_id):
+    member = EmployeeFamily.query.get_or_404(member_id)
+    db.session.delete(member)
+    db.session.commit()
+    flash('Removed.', 'success')
+    return redirect(url_for('employees.edit_employee', emp_id=emp_id) + '#tab-other')
 
 
 # ── Bulk Import ───────────────────────────────────────────────────────────────

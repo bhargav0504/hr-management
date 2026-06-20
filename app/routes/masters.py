@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models.masters import Department, Designation, Category, Location, SalaryComponent
 from app.models.leave import LeaveType
+from app.models.bank import Bank
 
 masters_bp = Blueprint('masters', __name__, url_prefix='/masters')
 
@@ -75,6 +76,7 @@ def index():
         loc_count=Location.query.filter_by(company_id=cid).count(),
         lt_count=LeaveType.query.filter_by(company_id=cid).count(),
         sc_count=SalaryComponent.query.filter_by(company_id=cid).count(),
+        bank_count=Bank.query.filter_by(company_id=cid).count(),
     )
 
 

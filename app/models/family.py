@@ -9,6 +9,8 @@ class EmployeeFamily(db.Model):
     name = db.Column(db.String(200), nullable=False)
     relation = db.Column(db.String(50), nullable=False)  # Spouse, Son, Daughter, Father, Mother, Other
     date_of_birth = db.Column(db.Date, nullable=True)
+    guardian_name = db.Column(db.String(200), nullable=True)
+    relation_with_guardian = db.Column(db.String(50), nullable=True)
     is_nominee = db.Column(db.Boolean, default=False)
     nominee_percent = db.Column(db.Integer, default=0)
 
